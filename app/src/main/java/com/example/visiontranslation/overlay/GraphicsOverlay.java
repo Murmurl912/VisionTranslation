@@ -8,10 +8,12 @@ import android.util.LongSparseArray;
 import android.view.View;
 import android.view.ViewOverlay;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.visiontranslation.ui.MainActivity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,64 +22,46 @@ public class GraphicsOverlay  {
 
 
     private View view; // whic view to overlay
-    private Context context;
     private ViewOverlay overlay;
+    private HashSet<Drawable> array;
 
-    private LongSparseArray<OverlayDrawable> array;
-
-
-    public GraphicsOverlay(View view, Context context) {
+    public GraphicsOverlay(View view) {
         this.view = view;
-        this.context = context;
-        array = new LongSparseArray<>();
+        array = new HashSet<>();
         overlay = view.getOverlay();
     }
 
-    public synchronized void add(OverlayDrawable drawable) {
-        array.append(drawable.id, drawable);
+    public synchronized void add(Drawable drawable) {
+        array.add(drawable);
         overlay.add(drawable);
         update();
     }
 
-    public synchronized void remove(OverlayDrawable drawable) {
-        array.remove(drawable.id);
+    public synchronized void remove(Drawable drawable) {
+        array.remove(drawable);
         overlay.remove(drawable);
         update();
-
     }
 
 
-    public synchronized void remove(long id) {
-        Drawable drawable = array.get(id, null);
-        if(drawable == null) {
-            return;
-        }
-        overlay.remove(drawable);
-        array.remove(id);
-        update();
-    }
-
-    public OverlayDrawable get(long id) {
-        return array.get(id, null);
-    }
-
-    public synchronized void add(List<? extends OverlayDrawable> drawableList) {
-        for(OverlayDrawable drawable : drawableList) {
+    public synchronized void add(@NonNull HashSet<Drawable> drawableList) {
+        for(Drawable drawable : drawableList) {
             if (drawable == null) {
                 continue;
             }
-            array.append(drawable.id, drawable);
+
+            array.add(drawable);
             overlay.add(drawable);
         }
         update();
     }
 
-    public synchronized void remove(List<? extends OverlayDrawable> drawableList) {
-        for(OverlayDrawable drawable : drawableList) {
+    public synchronized void remove(@NonNull List<? extends Drawable> drawableList) {
+        for(Drawable drawable : drawableList) {
             if (drawable == null) {
                 continue;
             }
-            array.remove(drawable.id);
+            array.remove(drawable);
             overlay.remove(drawable);
         }
         update();

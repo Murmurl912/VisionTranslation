@@ -7,14 +7,12 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.text.method.TextKeyListener;
+import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.visiontranslation.R;
-
-public class BoundingDrawable extends OverlayDrawable {
+public class BoundingDrawable extends Drawable {
 
     private Paint stroke;
     private Paint fill;

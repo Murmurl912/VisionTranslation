@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 
 import com.example.visiontranslation.VisionTranslationApplication;
 import com.example.visiontranslation.helper.NV21ToBitmap;
+import com.google.android.gms.vision.Detector;
+import com.google.android.gms.vision.FocusingProcessor;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
@@ -28,15 +30,13 @@ public class VisionTextRecognizer implements FrameProcessor {
     private boolean isRecognizing;
 
     private OnDetectingResultListener listener;
-    private OnDetectingResultListener mListener;
 
     public VisionTextRecognizer() {
         isReady = false;
         isProcessing = false;
-
     }
 
-    public void fierup() {
+    public void fireup() {
         isRecognizing = true;
         isProcessing = false;
     }
@@ -76,11 +76,13 @@ public class VisionTextRecognizer implements FrameProcessor {
         if(callback != null) {
             callback.onDetectionResult(result, new SizeF(frame.getMetadata().getWidth(), frame.getMetadata().getHeight()));
         }
+
         return result;
     }
 
     private void detect(com.google.android.gms.vision.Frame frame) {
         SparseArray<TextBlock> result = recognizer.detect(frame);
+
         if(listener != null) {
             listener.onDetectionResult(result, new SizeF(frame.getMetadata().getWidth(), frame.getMetadata().getHeight()));
             System.gc();
@@ -119,6 +121,8 @@ public class VisionTextRecognizer implements FrameProcessor {
             detect(prepareFrame(frame));
             isProcessing = false;
         }
+
+
 
     }
 
