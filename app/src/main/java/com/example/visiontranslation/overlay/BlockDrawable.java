@@ -55,7 +55,7 @@ public class BlockDrawable extends Drawable {
     @Override
     public void draw(@NonNull Canvas canvas) {
         Rect rect = canvas.getClipBounds();
-
+        Line line;
         Rect textBlockBoundingBox = textBlock.getBoundingBox();
         canvas.drawRect(
                 textBlockBoundingBox.left * rect.width() / (float)frameSize.getWidth(),

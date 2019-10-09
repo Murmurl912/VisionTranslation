@@ -19,6 +19,7 @@ public class Block implements Text {
     private String value;
 
 
+
     private Block(String value, RectF relativeBounding, PointF[] relativePoint, List<Line> lines) {
         this.pointFS = relativePoint;
         this.boundingBox = relativeBounding;
@@ -58,8 +59,6 @@ public class Block implements Text {
 
 
         return new Block(value.toString(), bounding, points, lines);
-
-
     }
 
     @NonNull

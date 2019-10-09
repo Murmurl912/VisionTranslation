@@ -1,13 +1,9 @@
 package com.example.visiontranslation.ui.camera;
 
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -15,39 +11,23 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeechService;
 import android.util.Log;
-import android.util.Size;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.detector.text.VisionTextDetector;
-import com.example.visiontranslation.detector.text.VisionTextRecognizer;
-import com.example.visiontranslation.overlay.BoundingDrawable;
-import com.example.visiontranslation.overlay.GraphicsOverlay;
-import com.example.visiontranslation.overlay.TextBlockDrawable;
-import com.example.visiontranslation.tracker.GenericTracker;
-import com.example.visiontranslation.ui.MainActivity;
-import com.google.android.gms.vision.text.TextBlock;
-import com.otaliastudios.cameraview.BitmapCallback;
-import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraView;
-import com.otaliastudios.cameraview.PictureResult;
-import com.otaliastudios.cameraview.frame.FrameProcessor;
+import com.otaliastudios.cameraview.controls.Flash;
+import com.otaliastudios.cameraview.size.Size;
+import com.otaliastudios.cameraview.size.SizeSelector;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
-import org.opencv.core.Rect2d;
-import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,12 +37,16 @@ import java.util.Objects;
 public class CameraFragment extends Fragment {
 
     public final String TAG = "CameraFragment";
+    public final int REQUEST_CODE_PICK_IMAGE = 1;
 
     private int REQUEST_CODE_PERMISSIONS = 101;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA","android.permission.RECORD_AUDIO", "android.permission.WRITE_EXTERNAL_STORAGE"};
 
     private FragmentCameraManager manager;
     private CameraView cameraView;
+    private ImageButton imageChoose;
+    private ImageButton pauseButton;
+    private ImageButton flashButton;
 
     static {
         if (!OpenCVLoader.initDebug())
@@ -87,13 +71,27 @@ public class CameraFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated() called");
+        imageChoose = view.findViewById(R.id.main_camera_image_choose);
+        pauseButton = view.findViewById(R.id.main_camera_pause_button);
+        flashButton = view.findViewById(R.id.main_camera_flash);
+
         cameraView = view.findViewById(R.id.main_camera_view);
+
         if(isAllPermissionGranted()) {
             startCamera();
         } else {
             requestPermission();
         }
 
+        imageChoose.setOnClickListener(v->{
+            startChooseImageActivity();
+        });
+        pauseButton.setOnClickListener(v->{
+            onPauseButtonClicked();
+        });
+        flashButton.setOnClickListener(v->{
+            onFlashButtonClicked();
+        });
     }
 
     @Override
@@ -110,6 +108,23 @@ public class CameraFragment extends Fragment {
                 startCamera();
             } else {
                 Toast.makeText(getContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_PICK_IMAGE: {
+                if(resultCode == Activity.RESULT_OK) {
+
+                    onPickImageSuccess(data);
+                } else {
+                    onPickImageFailed(data);
+                }
+            } break;
+            default: {
+
             }
         }
     }
@@ -139,5 +154,42 @@ public class CameraFragment extends Fragment {
         return true;
     }
 
+    public void startChooseImageActivity() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
+    }
+
+    private void onPickImageSuccess(Intent data) {
+
+    }
+
+    private void onPickImageFailed(Intent data) {
+
+    }
+
+    private void onFlashButtonClicked() {
+        if(cameraView != null) {
+            if(cameraView.getFlash() == Flash.ON || cameraView.getFlash() == Flash.TORCH) {
+                cameraView.setFlash(Flash.OFF);
+                flashButton.setImageResource(R.drawable.ic_flash_off_dark);
+            } else {
+                cameraView.setFlash(Flash.TORCH);
+                flashButton.setImageResource(R.drawable.ic_flash_on_dark);
+            }
+        }
+    }
+
+    private void onPauseButtonClicked() {
+        if(cameraView != null) {
+            if(manager.isFrozen()) {
+                pauseButton.setImageResource(R.drawable.ic_pase_circle_dark);
+                manager.resumeFrame();
+            } else {
+                pauseButton.setImageResource(R.drawable.ic_resume_dark);
+                manager.pauseFrame();
+            }
+        }
+    }
 
 }

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.util.Log;
+import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 
@@ -63,6 +64,27 @@ public class VisionTextDetector implements FrameProcessor {
         textRecognizer.release();
     }
 
+    public void setFocusID(int id) {
+        if(isReady && textRecognizer.isOperational()) {
+            this.textRecognizer.setFocus(id);
+        }
+    }
+
+    public void detect(@NonNull com.google.android.gms.vision.Frame frame, @NonNull DetectionCallback callback) {
+        if(isReady && textRecognizer.isOperational()) {
+            try {
+                SparseArray<TextBlock> results = textRecognizer.detect(frame);
+                callback.onDetectionComplete(true, results);
+            } catch (Exception e) {
+                callback.onDetectionComplete(false, null);
+            }
+
+        } else {
+            callback.onDetectionComplete(false, null);
+        }
+    }
+
+
     @Override
     public void process(@NonNull Frame frame) {
 
@@ -73,10 +95,12 @@ public class VisionTextDetector implements FrameProcessor {
         if(!processing || !textRecognizer.isOperational() || !isReady) {
             return;
         }
+
+        // lock
+        isProcessing = true;
         try {
-            /*
+
             long startProcessingTime = System.currentTimeMillis();
-            isProcessing = true;
             Bitmap bitmap = nv21ToBitmap.nv21ToBitmap(frame.getData(), frame.getSize().getWidth(), frame.getSize().getHeight());
             long startRotatingTime = System.currentTimeMillis();
             matrix.setRotate(frame.getRotation());
@@ -93,8 +117,10 @@ public class VisionTextDetector implements FrameProcessor {
             long startDetectingTime = System.currentTimeMillis();
             // problem code should not recycle bitmap
             // rotated.recycle();
+            textRecognizer.receiveFrame(image);
+            long endDetectingTime = System.currentTimeMillis();
 
-             */
+            /*
             long startDetectingTime = System.currentTimeMillis();
             byte[] bytes = frame.getData();
             ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
@@ -109,19 +135,29 @@ public class VisionTextDetector implements FrameProcessor {
             Log.d(TAG, "A\nFrame Time: " + (endDetectingTime - startDetectingTime
                     + "\nPreparation Time: " + (time - startDetectingTime)
             ));
-            /*
+
+            */
+
+
             Log.d(TAG, "A\nFrame Time: " + (System.currentTimeMillis() - startProcessingTime)
                     + "\n\tNV21 To Bitmap Time: " + (startRotatingTime - startProcessingTime)
                     + "\n\tRotate Bitmap Time: " + (startConvertTime - startRotatingTime)
                     + "\n\tBitmap To Frame Time: " + (startDetectingTime - startConvertTime)
                     + "\n\tDetecting Time: " + (endDetectingTime - startDetectingTime)
             );
-d
-             */
+
+
         } catch (Exception e) {
+            isProcessing = false;
+        } finally {
+            // unlock
             isProcessing = false;
         }
 
+    }
+
+    public interface DetectionCallback {
+        public void onDetectionComplete(boolean isSuccess, SparseArray<TextBlock> detections);
     }
 
 }
