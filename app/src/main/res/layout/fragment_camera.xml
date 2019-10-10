@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
@@ -7,70 +7,93 @@
     android:layout_height="match_parent"
     android:padding="4dp">
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginBottom="4dp"
-        app:cardElevation="6dp"
-        app:cardCornerRadius="8dp">
-
-        <LinearLayout android:orientation="horizontal"
+        android:layout_height="match_parent"
+        app:elevation="0dp"
+        android:layout_marginTop="?attr/actionBarSize">
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#50FFFFFF"
-            style="?android:attr/buttonBarStyle">
-            <ImageButton android:id="@+id/main_camera_image_choose"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_gallary_dark"
-                android:layout_weight="1"
-                style="?android:attr/buttonBarButtonStyle"/>
-            <ImageButton android:id="@+id/main_camera_pause_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:src="@drawable/ic_pase_circle_dark"
-                style="?android:attr/buttonBarButtonStyle"/>
-            <ImageButton android:id="@+id/main_camera_flash"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:src="@drawable/ic_flash_off_dark"
-                style="?android:attr/buttonBarButtonStyle"/>
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginBottom="4dp"
-        app:cardElevation="6dp"
-        app:cardCornerRadius="8dp">
-        <com.otaliastudios.cameraview.CameraView
-            android:id="@+id/main_camera_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cameraAudio="off"
-            app:cameraPreview="glSurface"
-            app:cameraGestureTap="autoFocus"
-            app:cameraFlash="off"
-            app:cameraEngine="camera2" >
-            <ImageView android:id="@+id/main_camera_view_water_mark"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            app:cardCornerRadius="8dp"
+            app:layout_scrollFlags="scroll"
+            >
+            <LinearLayout android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </com.otaliastudios.cameraview.CameraView>
-    </androidx.cardview.widget.CardView>
+                android:layout_height="wrap_content"
+                android:background="#50FFFFFF"
+                style="?android:attr/buttonBarStyle">
+                <ImageButton android:id="@+id/main_camera_image_choose"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_gallary_dark"
+                    android:layout_weight="1"
+                    style="?android:attr/buttonBarButtonStyle"/>
+                <ImageButton android:id="@+id/main_camera_pause_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_pase_circle_dark"
+                    style="?android:attr/buttonBarButtonStyle"/>
+                <ImageButton android:id="@+id/main_camera_flash"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_flash_off_dark"
+                    style="?android:attr/buttonBarButtonStyle"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            app:layout_scrollFlags="scroll"
+            app:cardCornerRadius="8dp">
+            <com.otaliastudios.cameraview.CameraView
+                android:id="@+id/main_camera_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_widthPercent="100%"
+                app:layout_aspectRatio="133%"
+                app:scaleType="centerCrop"
+                app:cameraAudio="off"
+                app:cameraPreview="glSurface"
+                app:cameraGestureTap="autoFocus"
+                app:cameraFlash="off"
+                app:cameraEngine="camera2" >
+                <ImageView android:id="@+id/main_camera_view_water_mark"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </com.otaliastudios.cameraview.CameraView>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            app:layout_scrollFlags="scroll"
+            app:cardCornerRadius="8dp"
+            >
+            <TextView android:id="@+id/main_camera_result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textIsSelectable="true"
+                />
+        </androidx.cardview.widget.CardView>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/main_camera_view_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="wrap_content"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

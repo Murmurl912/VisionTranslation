@@ -44,7 +44,7 @@ public class GraphicsOverlay  {
     }
 
 
-    public synchronized void add(@NonNull HashSet<Drawable> drawableList) {
+    public synchronized void add(@NonNull List<? extends Drawable> drawableList) {
         for(Drawable drawable : drawableList) {
             if (drawable == null) {
                 continue;

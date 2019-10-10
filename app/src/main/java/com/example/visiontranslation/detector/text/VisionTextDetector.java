@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.util.Log;
+import android.util.Size;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
@@ -16,19 +17,19 @@ import com.google.android.gms.vision.text.TextRecognizer;
 import com.otaliastudios.cameraview.frame.Frame;
 import com.otaliastudios.cameraview.frame.FrameProcessor;
 
-import java.nio.ByteBuffer;
 
 public class VisionTextDetector implements FrameProcessor {
 
     public final String TAG = "VisionTextDetector";
-    private final Object lock;
     private TextRecognizer textRecognizer;
     private NV21ToBitmap nv21ToBitmap;
     private Matrix matrix;
     private boolean processing;
-    private Detector.Processor<TextBlock> processor;
     private boolean isReady;
     private boolean isProcessing;
+    private Size previewSize;
+    Bitmap rotated;
+
     public VisionTextDetector() {
         textRecognizer = new TextRecognizer.Builder(
                 VisionTranslationApplication.getVisionTranslationApplication()
@@ -41,13 +42,15 @@ public class VisionTextDetector implements FrameProcessor {
         matrix = new Matrix();
         processing = false;
         isReady = false;
-        lock = new Object();
         isProcessing = false;
     }
 
     public void setProcessor(@NonNull Detector.Processor<TextBlock> processor) {
         this.textRecognizer.setProcessor(processor);
         isReady = true;
+    }
+    public void setPreviewSize(@NonNull Size previewSize) {
+        this.previewSize = previewSize;
     }
 
     public void fireup() {
@@ -71,7 +74,7 @@ public class VisionTextDetector implements FrameProcessor {
     }
 
     public void detect(@NonNull com.google.android.gms.vision.Frame frame, @NonNull DetectionCallback callback) {
-        if(isReady && textRecognizer.isOperational()) {
+        if(textRecognizer.isOperational()) {
             try {
                 SparseArray<TextBlock> results = textRecognizer.detect(frame);
                 callback.onDetectionComplete(true, results);
@@ -83,7 +86,6 @@ public class VisionTextDetector implements FrameProcessor {
             callback.onDetectionComplete(false, null);
         }
     }
-
 
     @Override
     public void process(@NonNull Frame frame) {
@@ -100,15 +102,28 @@ public class VisionTextDetector implements FrameProcessor {
         isProcessing = true;
         try {
 
+
             long startProcessingTime = System.currentTimeMillis();
             Bitmap bitmap = nv21ToBitmap.nv21ToBitmap(frame.getData(), frame.getSize().getWidth(), frame.getSize().getHeight());
             long startRotatingTime = System.currentTimeMillis();
             matrix.setRotate(frame.getRotation());
-            Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+            if(rotated != null && !rotated.isRecycled()) {
+                rotated.recycle();
+            }
+            rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+            bitmap.recycle();
+
+            if(previewSize != null) {
+
+                float ratio = ((float)previewSize.getHeight()) / previewSize.getWidth();
+                float width = rotated.getWidth();
+                float height = width * ratio;
+                rotated = Bitmap.createBitmap(rotated, 0, (int)((rotated.getHeight() - height) / 2), (int)width, (int)height);
+            }
+
             long startConvertTime = System.currentTimeMillis();
             int rotation = frame.getRotation() == 0 ? com.google.android.gms.vision.Frame.ROTATION_0 : (frame.getRotation() == 90 ? com.google.android.gms.vision.Frame.ROTATION_90 : (frame.getRotation() == 180 ? com.google.android.gms.vision.Frame.ROTATION_180 : com.google.android.gms.vision.Frame.ROTATION_270));
             rotation = frame.getRotation() % 90;
-            bitmap.recycle();
             com.google.android.gms.vision.Frame image = new com.google.android.gms.vision.Frame.Builder()
                     .setBitmap(rotated)
                     .setTimestampMillis(frame.getTime())

@@ -15,7 +15,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.visiontranslation.R;
@@ -47,6 +49,7 @@ public class CameraFragment extends Fragment {
     private ImageButton imageChoose;
     private ImageButton pauseButton;
     private ImageButton flashButton;
+    private TextView textView;
 
     static {
         if (!OpenCVLoader.initDebug())
@@ -77,11 +80,7 @@ public class CameraFragment extends Fragment {
 
         cameraView = view.findViewById(R.id.main_camera_view);
 
-        if(isAllPermissionGranted()) {
-            startCamera();
-        } else {
-            requestPermission();
-        }
+        textView = view.findViewById(R.id.main_camera_result);
 
         imageChoose.setOnClickListener(v->{
             startChooseImageActivity();
@@ -129,10 +128,20 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if(isAllPermissionGranted()) {
+            startCamera();
+        } else {
+            requestPermission();
+        }
+    }
+
     private void startCamera() {
         cameraView.setLifecycleOwner(this);
         cameraView.setPlaySounds(false);
-        manager = new FragmentCameraManager(cameraView);
+        manager = new FragmentCameraManager(cameraView, textView);
         manager.setDetector(new VisionTextDetector());
         manager.startDetector();
 

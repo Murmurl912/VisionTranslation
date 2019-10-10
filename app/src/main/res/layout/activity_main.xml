@@ -16,18 +16,15 @@
         <androidx.viewpager.widget.ViewPager android:id="@+id/main_view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#00000000"
             app:elevation="0dp"
             android:padding="4dp">
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                app:cardElevation="6dp"
                 app:cardCornerRadius="8dp">
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/main_toolbar"
