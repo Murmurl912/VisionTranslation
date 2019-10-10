@@ -35,12 +35,18 @@ import com.otaliastudios.cameraview.CameraOptions;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.PictureResult;
 
+import org.opencv.core.Rect2d;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class FragmentCameraManager
         extends CameraListener
-        implements View.OnTouchListener, Detector.Processor<TextBlock>, ViewTreeObserver.OnGlobalLayoutListener {
+        implements
+            View.OnTouchListener,
+            Detector.Processor<TextBlock>,
+            ViewTreeObserver.OnGlobalLayoutListener,
+            GenericTracker.TrackingResultCallback {
 
     public final String TAG = "FragmentCameraManager";
 
@@ -52,6 +58,9 @@ public class FragmentCameraManager
     private Drawable pausedFrameOverlay;
     private List<Drawable> lineOverlay;
     private List<Line> lines;
+
+    private Drawable trackerDrawable;
+    private GenericTracker tracker;
 
     private boolean isFrozen;
     private ImageView waterMark;
@@ -101,6 +110,19 @@ public class FragmentCameraManager
         }
     }
 
+    private void setTracker() {
+        tracker = new GenericTracker();
+        tracker.setTrackingResultCallback(this);
+    }
+
+    private void startTracker() {
+
+    }
+
+    private void closeTracker() {
+
+    }
+
 
     public void destroy() {
         if(detector != null) {
@@ -144,6 +166,11 @@ public class FragmentCameraManager
     }
 
     private void processPausedFrame(@NonNull Bitmap frame) {
+
+    }
+
+    @Override
+    public void onTrackingResult(boolean isSuccess, org.opencv.core.Size frameSize, Rect2d relativeCoordinate) {
 
     }
 
@@ -198,6 +225,7 @@ public class FragmentCameraManager
         SparseArray<TextBlock> blocks = detections.getDetectedItems();
         if(lineOverlay != null && lines != null) {
             overlay.remove(lineOverlay);
+            lineOverlay.clear();
             lines.clear();
         } else {
             lineOverlay = new ArrayList<>();
@@ -206,11 +234,13 @@ public class FragmentCameraManager
 
         Metadata metadata = detections.getFrameMetadata();
         Size size = new Size(metadata.getWidth(), metadata.getHeight());
+        display.setText("");
         for(int i = 0; i < blocks.size(); i++) {
             TextBlock block = blocks.valueAt(i);
             for(Text text : block.getComponents()) {
                 lines.add((Line)text);
                 lineOverlay.add(new LineDrawable((Line)text, size));
+
             }
         }
 

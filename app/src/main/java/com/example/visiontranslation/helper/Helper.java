@@ -51,4 +51,20 @@ public class Helper {
     public static float pxToSp(int px, Context context) {
         return px / context.getResources().getDisplayMetrics().scaledDensity;
     }
+
+    public static String escapeSingleQuote(String input) {
+        StringBuilder output = new StringBuilder();
+        if(input == null || input.equals("")) {
+            return output.toString();
+        }
+        char[] chars = input.toCharArray();
+        for(char c : chars) {
+            if(c == '\'') {
+                output.append('\\').append(c);
+            } else {
+                output.append(c);
+            }
+        }
+        return output.toString();
+    }
 }

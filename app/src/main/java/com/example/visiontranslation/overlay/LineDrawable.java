@@ -66,26 +66,35 @@ public class LineDrawable extends Drawable {
                     VisionTranslationApplication.getVisionTranslationApplication().getApplicationContext()
             );
             paint.setTextSize(fontSize);
+            paint.setTextSize(48);
         }
 
-        canvas.rotate(line.getAngle());
-        paint.setColor(Color.BLACK);
-        canvas.drawRect(
-                lineBox.left * ratio.getWidth(),
-                lineBox.top * ratio.getHeight(),
-                lineBox.right * ratio.getWidth(),
-                lineBox.bottom * ratio.getHeight(),
-                paint
-        );
+        // canvas.rotate(line.getAngle());
+
+        /*
+            paint.setColor(Color.BLACK);
+            canvas.drawRect(
+                    lineBox.left * ratio.getWidth(),
+                    lineBox.top * ratio.getHeight(),
+                    lineBox.right * ratio.getWidth(),
+                    lineBox.bottom * ratio.getHeight(),
+                    paint
+            );
+
+         */
+
+        // ToDo: correct text position shuttering
+        // ToDo: correct text position and angle
+
         paint.setColor(Color.parseColor("#ffffff"));
         canvas.drawText(
                 value,
-                lineBox.left * ratio.getWidth(),
-                lineBox.bottom * ratio.getHeight(),
+                points[3].x * ratio.getWidth(),
+                points[3].y * ratio.getHeight(),
                 paint
         );
 
-        canvas.rotate(-line.getAngle());
+        // canvas.rotate(-line.getAngle());
     }
 
     @Override
