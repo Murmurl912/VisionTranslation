@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 
 import com.example.visiontranslation.VisionTranslationApplication;
 import com.example.visiontranslation.helper.Helper;
+import com.example.visiontranslation.translation.BaiduTranslationService;
 import com.google.android.gms.vision.text.Line;
 
 public class LineDrawable extends Drawable {
@@ -28,18 +29,22 @@ public class LineDrawable extends Drawable {
     private String language;
     private Point[] points;
     private float fontSize;
+    private String translated;
+    private float textHeight;
 
-    public LineDrawable(@NonNull Line line, @NonNull Size frameSize) {
+    public LineDrawable(@NonNull Line line, @NonNull Size frameSize, @Nullable String translated) {
         this.line = line;
         this.frameSize = frameSize;
         this.lineBox = line.getBoundingBox();
         this.paint = new Paint();
         this.value = line.getValue();
+        this.translated = translated;
         this.language = line.getLanguage();
         this.points = line.getCornerPoints();
         fontSize = -1;
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        textHeight = 0;
     }
 
     @Override
@@ -52,24 +57,23 @@ public class LineDrawable extends Drawable {
         SizeF ratio = new SizeF((float)box.width() / frameSize.getWidth(), (float)box.height() / frameSize.getHeight());
 
         if(fontSize < 0) {
-            fontSize = Helper.dpToSp(
-                    (int)Math.sqrt(
+            textHeight = (int)Math.sqrt(
+                    Math.pow(
+                            (points[0].x - points[3].x) * ratio.getWidth(),
+                            2
+                    ) +
                             Math.pow(
-                                    (points[0].x - points[3].x) * ratio.getWidth(),
+                                    (points[0].y - points[3].y) * ratio.getHeight(),
                                     2
-                            ) +
-                                    Math.pow(
-                                            (points[0].y - points[3].y) * ratio.getHeight(),
-                                            2
-                                    )
-                    ),
-                    VisionTranslationApplication.getVisionTranslationApplication().getApplicationContext()
+                            )
+            );
+            fontSize = Helper.dpToSp(textHeight, VisionTranslationApplication.getVisionTranslationApplication().getApplicationContext()
             );
             paint.setTextSize(fontSize);
-            paint.setTextSize(48);
+            // paint.setTextSize(48);
         }
 
-        // canvas.rotate(line.getAngle());
+        canvas.rotate(line.getAngle(), points[3].x, points[3].y);
 
         /*
             paint.setColor(Color.BLACK);
@@ -83,18 +87,44 @@ public class LineDrawable extends Drawable {
 
          */
 
-        // ToDo: correct text position shuttering
-        // ToDo: correct text position and angle
 
-        paint.setColor(Color.parseColor("#ffffff"));
-        canvas.drawText(
-                value,
-                points[3].x * ratio.getWidth(),
-                points[3].y * ratio.getHeight(),
-                paint
-        );
+        if(translated != null) {
+            Rect rect = new Rect();
+            paint.getTextBounds(translated, 0, translated.length(), rect);
+            paint.setColor(Color.parseColor("#80000000"));
+            rect.offsetTo(
+                    (int)(points[0].x * ratio.getWidth()),
+                    (int)(points[0].y * ratio.getHeight())
+            );
+            canvas.drawRect(rect, paint);
 
-        // canvas.rotate(-line.getAngle());
+            paint.setColor(Color.parseColor("#ffffff"));
+            canvas.drawText(
+                    translated,
+                    points[3].x * ratio.getWidth(),
+                    points[3].y * ratio.getHeight(),
+                    paint
+            );
+        } else {
+            Rect rect = new Rect();
+            paint.getTextBounds(value, 0, value.length(), rect);
+            paint.setColor(Color.parseColor("#ff000000"));
+            rect.offsetTo(
+                    (int)(points[0].x * ratio.getWidth()),
+                    (int)(points[0].y * ratio.getHeight())
+            );
+            canvas.drawRect(rect, paint);
+
+            paint.setColor(Color.parseColor("#ffffff"));
+            canvas.drawText(
+                    value,
+                    points[3].x * ratio.getWidth(),
+                    points[3].y * ratio.getHeight(),
+                    paint
+            );
+        }
+
+        canvas.rotate(-line.getAngle(), points[3].x, points[3].y);
     }
 
     @Override

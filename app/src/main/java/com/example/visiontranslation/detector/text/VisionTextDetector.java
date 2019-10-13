@@ -61,6 +61,10 @@ public class VisionTextDetector implements FrameProcessor {
         processing = false;
     }
 
+    public Bitmap getFrame() {
+        return rotated;
+    }
+
     public void destroy() {
         processing = false;
         isReady = false;
@@ -87,6 +91,27 @@ public class VisionTextDetector implements FrameProcessor {
         }
     }
 
+    public Bitmap rotateAndCropImage(final Bitmap bitmap, final Size previewSize, int rotation) {
+        rotation = Math.abs(rotation) / 90;
+        Bitmap image = bitmap;
+
+        Matrix matrix = new Matrix();
+        matrix.setRotate(rotation * 90);
+        float ratio = ((float)previewSize.getHeight()) / previewSize.getWidth();
+        float height = bitmap.getHeight();
+        float width = height * ratio;
+        image = Bitmap.createBitmap(
+                image,
+                (int)((bitmap.getWidth() - width) / 2),
+                0,
+                (int)width,
+                (int)height,
+                matrix,
+                false
+        );
+        return image;
+    }
+
     @Override
     public void process(@NonNull Frame frame) {
 
@@ -110,20 +135,8 @@ public class VisionTextDetector implements FrameProcessor {
             if(rotated != null && !rotated.isRecycled()) {
                 rotated.recycle();
             }
-            rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
-            bitmap.recycle();
-
-            if(previewSize != null) {
-
-                float ratio = ((float)previewSize.getHeight()) / previewSize.getWidth();
-                float width = rotated.getWidth();
-                float height = width * ratio;
-                rotated = Bitmap.createBitmap(rotated, 0, (int)((rotated.getHeight() - height) / 2), (int)width, (int)height);
-            }
-
+            rotated = rotateAndCropImage(bitmap, previewSize, frame.getRotation());
             long startConvertTime = System.currentTimeMillis();
-            int rotation = frame.getRotation() == 0 ? com.google.android.gms.vision.Frame.ROTATION_0 : (frame.getRotation() == 90 ? com.google.android.gms.vision.Frame.ROTATION_90 : (frame.getRotation() == 180 ? com.google.android.gms.vision.Frame.ROTATION_180 : com.google.android.gms.vision.Frame.ROTATION_270));
-            rotation = frame.getRotation() % 90;
             com.google.android.gms.vision.Frame image = new com.google.android.gms.vision.Frame.Builder()
                     .setBitmap(rotated)
                     .setTimestampMillis(frame.getTime())
@@ -134,25 +147,6 @@ public class VisionTextDetector implements FrameProcessor {
             // rotated.recycle();
             textRecognizer.receiveFrame(image);
             long endDetectingTime = System.currentTimeMillis();
-
-            /*
-            long startDetectingTime = System.currentTimeMillis();
-            byte[] bytes = frame.getData();
-            ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-            com.google.android.gms.vision.Frame image = new com.google.android.gms.vision.Frame.Builder()
-                    .setImageData( byteBuffer, frame.getSize().getWidth(), frame.getSize().getHeight(), ImageFormat.NV21)
-                    .setRotation(frame.getRotation() % 90)
-                    .setTimestampMillis(frame.getTime()).build();
-            long time = System.currentTimeMillis();
-            textRecognizer.receiveFrame(image);
-            isProcessing = false;
-            long endDetectingTime = System.currentTimeMillis();
-            Log.d(TAG, "A\nFrame Time: " + (endDetectingTime - startDetectingTime
-                    + "\nPreparation Time: " + (time - startDetectingTime)
-            ));
-
-            */
-
 
             Log.d(TAG, "A\nFrame Time: " + (System.currentTimeMillis() - startProcessingTime)
                     + "\n\tNV21 To Bitmap Time: " + (startRotatingTime - startProcessingTime)

@@ -32,17 +32,19 @@ class HttpGet {
             sslcontext.init(null, new TrustManager[] { myX509TrustManager }, null);
 
             String sendUrl = getUrlWithQueryString(host, params);
-
             // System.out.println("URL:" + sendUrl);
 
             URL uri = new URL(sendUrl); // 鍒涘缓URL瀵硅薄
             HttpURLConnection conn = (HttpURLConnection) uri.openConnection();
+
             if (conn instanceof HttpsURLConnection) {
                 ((HttpsURLConnection) conn).setSSLSocketFactory(sslcontext.getSocketFactory());
             }
 
+
             conn.setConnectTimeout(SOCKET_TIMEOUT); // 璁剧疆鐩稿簲瓒呮椂
             conn.setRequestMethod(GET);
+            conn.connect();
             int statusCode = conn.getResponseCode();
             if (statusCode != HttpURLConnection.HTTP_OK) {
                 System.out.println("Http閿欒鐮侊細" + statusCode);

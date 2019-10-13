@@ -15,16 +15,15 @@ import java.util.Map;
 
 public class TranslationCache {
 
-    private static TranslationCache translationCache;
     private SQLiteDatabase database;
     private final String dname = "TranslationCacheDatabase";
     private final String createSql = "" +
             "create table TranslationCache (" +
-            "number id primary key," +
-            "text source," +
-            "text target," +
-            "text value," +
-            "text result)";
+            "id number primary key," +
+            "source text," +
+            "target text," +
+            "value text ," +
+            "result text)";
 
     private Context context;
 
@@ -32,7 +31,7 @@ public class TranslationCache {
 
     private final int version = 1;
 
-    public TranslationCache(Context context) {
+    protected TranslationCache(Context context) {
         this.context = context;
         maps = new HashMap<>();
         createOrOpenDatabase();
@@ -73,20 +72,48 @@ public class TranslationCache {
     @Nullable
     private Entry query(@NonNull String from, @NonNull String to, @NonNull String query) {
         Cursor cursor = database.rawQuery(
-                "select * from TranslationCache where source = '"
-                        + Helper.escapeSingleQuote(from) + "', target = '"
-                + Helper.escapeSingleQuote(to) + ", value = '" +
+                "select * from TranslationCache where source like '"
+                        + Helper.escapeSingleQuote(from) + "' and target like '"
+                + Helper.escapeSingleQuote(to) + "' and value like '" +
                 Helper.escapeSingleQuote(query) + "'", null);
 
+        Entry entry = null;
         if (cursor.moveToNext()) {
-            put(
+            entry = new Entry(
+                    cursor.getLong(0),
                     cursor.getString(1),
                     cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4)
             );
+            putToMap(entry);
         }
-        return null;
+        cursor.close();
+        return entry;
+    }
+
+    private void putToMap(Entry entry) {
+        // from -> (to -> (query -> entry) )
+        if(maps.containsKey(entry.getFrom())) {
+            Map<String, Map<String, Entry>> mapa = maps.get(entry.getFrom());
+            // to -> (query -> entry)
+            if(mapa.containsKey(entry.getTo())) {
+                Map<String, Entry> mapb = mapa.get(entry.getTo());
+                mapb.put(entry.getQuery(), entry);
+            } else {
+                Map<String, Entry> mapb = new HashMap<>();
+                mapb.put(entry.getQuery(), entry);
+                mapa.put(entry.getTo(), mapb);
+            }
+
+        } else {
+            HashMap<String, Map<String, Entry>> mapa = new HashMap<>();
+            HashMap<String, Entry> mapb = new HashMap<>();
+            mapb.put(entry.getQuery(), entry);
+            mapa.put(entry.getTo(), mapb);
+            maps.put(entry.getFrom(), mapa);
+        }
+
     }
 
     public void put(@NonNull String from, @NonNull String to, @NonNull String query, String result) {
@@ -94,36 +121,36 @@ public class TranslationCache {
         if(!database.isOpen()) {
             createOrOpenDatabase();
         }
+
+
         Entry entry = new Entry(System.currentTimeMillis(), from, to, query, result);
-        // from -> (to -> (query -> entry) )
-        if(maps.containsKey(from)) {
-            Map<String, Map<String, Entry>> mapa = maps.get(from);
-            // to -> (query -> entry)
-            if(mapa.containsKey(to)) {
-                Map<String, Entry> mapb = mapa.get(to);
-                mapb.put(query, entry);
-            } else {
-                Map<String, Entry> mapb = new HashMap<>();
-                mapb.put(query, entry);
-                mapa.put(to, mapb);
-            }
-
-        } else {
-            HashMap<String, Map<String, Entry>> mapa = new HashMap<>();
-            HashMap<String, Entry> mapb = new HashMap<>();
-            mapb.put(query, entry);
-            mapa.put(to, mapb);
-            maps.put(from, mapa);
-        }
-
+        putToMap(entry);
         database.execSQL(
                 "insert into TranslationCache values("
-                        + entry.id + ", "
-                        + Helper.escapeSingleQuote(entry.from) + ", "
-                        + Helper.escapeSingleQuote(entry.to) + ", "
-                        + Helper.escapeSingleQuote(entry.query) + ", "
-                        + Helper.escapeSingleQuote(entry.result) + ")"
+                        + entry.id + ", '"
+                        + Helper.escapeSingleQuote(entry.from) + "', '"
+                        + Helper.escapeSingleQuote(entry.to) + "', '"
+                        + Helper.escapeSingleQuote(entry.query) + "', '"
+                        + Helper.escapeSingleQuote(entry.result) + "')"
         );
+    }
+
+    public void update(long id, String result) {
+        if(database.isOpen()) {
+            createOrOpenDatabase();
+        }
+    }
+
+    public void remove(String from, String to, String query) {
+
+    }
+
+    public void clearCache() {
+        if(!database.isOpen()) {
+            createOrOpenDatabase();
+        }
+        database.execSQL("delete from TransaltionCache");
+        maps.clear();
     }
 
     public class Entry {

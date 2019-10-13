@@ -8,19 +8,37 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeechService;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.textclassifier.TextClassification;
+import android.view.textclassifier.TextClassifier;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.visiontranslation.R;
+import com.example.visiontranslation.helper.Helper;
+import com.example.visiontranslation.translation.BaiduTranslationService;
+import com.example.visiontranslation.ui.MainActivity;
+import com.google.android.gms.vision.L;
+
+import java.util.Locale;
+
+import static com.example.visiontranslation.translation.BaiduTranslationService.STATUS_OK;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class TextFragment extends Fragment {
 
+
+    private TextToSpeech tts;
+    private boolean isTTSReady = false;
 
     public final String TAG = "TextFragment";
 
@@ -105,8 +123,106 @@ public class TextFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated() called");
 
+        EditText source  = view.findViewById(R.id.main_text_source_edit_text);
+        TextView target = view.findViewById(R.id.main_text_target_text);
+
+        view.findViewById(R.id.main_text_speak_source_button).setOnClickListener(v->{
+           speak(
+                   source.getText().toString(),
+                   Helper.getLocaleByLanguage(((MainActivity)getActivity()).getSourceLanguage())
+                   );
+        });
+
+        view.findViewById(R.id.main_text_speak_target_button).setOnClickListener(v->{
+            speak(
+                    target.getText().toString(),
+                    Helper.getLocaleByLanguage(((MainActivity)getActivity()).getTargetLanguage())
+            );
+        });
+
+        view.findViewById(R.id.main_text_translate_button).setOnClickListener(v->{
+            Helper.hideSoftKeyboard(getActivity());
+            String text = source.getText().toString();
+            BaiduTranslationService.getBaiduTranslationService().request(
+                    BaiduTranslationService.getCode(((MainActivity) getActivity()).getSourceLanguage())
+                    ,
+                    BaiduTranslationService.getCode(((MainActivity) getActivity()).getTargetLanguage())
+                    ,
+                    text,
+                    new BaiduTranslationService.Response() {
+                        @Override
+                        public void response(String s, int status) {
+                            if(status == STATUS_OK) {
+                                target.setText(s);
+                            } else {
+                                view.post(()->{
+                                    Toast.makeText(getContext(), "Translation Services Unavailable", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        }
+                    }
+            );
+            Helper.hideSoftKeyboard(getActivity());
+            source.clearFocus();
+        });
+
+        view.findViewById(R.id.main_text_clear_source_content_button).setOnClickListener(v->{
+            Helper.hideSoftKeyboard(getActivity());
+            source.setText("");
+            target.setText("");
+            source.clearFocus();
+
+        });
     }
 
+    private void speak(@NonNull String text, Locale locale) {
+
+        if(tts == null) {
+            tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+                @Override
+                public synchronized void onInit(int status) {
+                    if(status == TextToSpeech.SUCCESS) {
+                        isTTSReady = true;
+                        tts.setLanguage(locale);
+                        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                        Toast.makeText(getContext(), "Speaking", Toast.LENGTH_SHORT).show();
+                    } else {
+                        isTTSReady = false;
+                        Toast.makeText(getContext(), "Text To Speech Failed to Initialize", Toast.LENGTH_SHORT).show();
+                        tts = null;
+                    }
+                }
+            });
+        } else {
+            if(isTTSReady) {
+                tts.setLanguage(locale);
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                Toast.makeText(getContext(), "Speaking", Toast.LENGTH_SHORT).show();
+            } else {
+                tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+                    @Override
+                    public synchronized void onInit(int status) {
+                        if(status == TextToSpeech.SUCCESS) {
+                            isTTSReady = true;
+                            tts.setLanguage(locale);
+                            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                            Toast.makeText(getContext(), "Speaking", Toast.LENGTH_SHORT).show();
+                        } else {
+                            isTTSReady = false;
+                            Toast.makeText(getContext(), "Text To Speech Failed to Initialize", Toast.LENGTH_SHORT).show();
+                            tts = null;
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+
+
+    private void clearText() {
+
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

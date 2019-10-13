@@ -10,6 +10,7 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import androidx.camera.core.ImageCapture;
 
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.detector.text.VisionTextDetector;
+import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.overlay.GraphicsOverlay;
 import com.example.visiontranslation.overlay.LineDrawable;
 import com.example.visiontranslation.overlay.TextBlockDrawable;
@@ -35,6 +37,9 @@ import com.otaliastudios.cameraview.CameraOptions;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.PictureResult;
 
+import org.opencv.android.InstallCallbackInterface;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Rect2d;
 
 import java.util.ArrayList;
@@ -64,14 +69,12 @@ public class FragmentCameraManager
 
     private boolean isFrozen;
     private ImageView waterMark;
-    private TextView display;
 
-    public FragmentCameraManager(CameraView cameraView, TextView display) {
+    public FragmentCameraManager(CameraView cameraView) {
         this.cameraView = cameraView;
         overlay = new GraphicsOverlay(cameraView);
         isFrozen = false;
         waterMark = cameraView.findViewById(R.id.main_camera_view_water_mark);
-        this.display = display;
         setUpCamera();
 
     }
@@ -97,15 +100,21 @@ public class FragmentCameraManager
         this.detector = detector;
         this.detector.setProcessor(this);
         cameraView.addFrameProcessor(detector);
+        lineOverlay = new ArrayList<>();
+
     }
 
     public void startDetector() {
+        overlay.remove(lineOverlay);
+        lineOverlay.clear();
         detector.setPreviewSize(new Size(cameraView.getWidth(), cameraView.getHeight()));
         detector.fireup();
     }
 
     public void closeDetector() {
         if(detector != null) {
+            overlay.remove(lineOverlay);
+            lineOverlay.clear();
             detector.shutdown();
         }
     }
@@ -176,6 +185,22 @@ public class FragmentCameraManager
 
     @Override
     public void onGlobalLayout() {
+        Helper.loadOpenCV(new LoaderCallbackInterface() {
+            @Override
+            public void onManagerConnected(int status) {
+                if(status == LoaderCallbackInterface.SUCCESS) {
+                    Log.d("OpenCVLoader", "OpenCV Load Success!");
+                } else {
+                    Log.d("OpenCVLoader", "OpenCV Load Failed!");
+                }
+            }
+
+            @Override
+            public void onPackageInstall(int operation, InstallCallbackInterface callback) {
+
+            }
+        });
+
         if(detector != null) {
             startDetector();
         }
@@ -186,7 +211,6 @@ public class FragmentCameraManager
     public boolean onTouch(View v, MotionEvent event) {
         return false;
     }
-
 
     @Override
     public void onCameraOpened(@NonNull CameraOptions options) {
@@ -221,7 +245,6 @@ public class FragmentCameraManager
 
     @Override
     public void receiveDetections(Detector.Detections<TextBlock> detections) {
-        display.setText("");
         SparseArray<TextBlock> blocks = detections.getDetectedItems();
         if(lineOverlay != null && lines != null) {
             overlay.remove(lineOverlay);
@@ -234,19 +257,48 @@ public class FragmentCameraManager
 
         Metadata metadata = detections.getFrameMetadata();
         Size size = new Size(metadata.getWidth(), metadata.getHeight());
-        display.setText("");
+        StringBuilder id = new StringBuilder();
+        ArrayList<StringBuilder> res = new ArrayList<>();
+
         for(int i = 0; i < blocks.size(); i++) {
             TextBlock block = blocks.valueAt(i);
+            id.append("\n\tid = ")
+                    .append(blocks.keyAt(i))
+                    .append("\n\t\tbounding = ")
+                    .append(block.getBoundingBox())
+                    .append("\n\t\tvalue = ")
+                    .append(block.getValue())
+                    .append("\n\t\tlanguage = ")
+                    .append(block.getLanguage());
+            if(!block.getLanguage().equals("en")) {
+                continue;
+            }
+
+            StringBuilder linRes = new StringBuilder();
             for(Text text : block.getComponents()) {
                 lines.add((Line)text);
-                lineOverlay.add(new LineDrawable((Line)text, size));
-
+                linRes.append("\n" + text.getValue());
+                lineOverlay.add(new LineDrawable((Line)text, size, null));
+                id.append("\n\t\tline: ")
+                        .append("\n\t\t\tbounding = ")
+                        .append(text.getBoundingBox())
+                        .append("\n\t\t\tvalue = ")
+                        .append(text.getValue())
+                        .append("\n\t\t\tlanguage = ")
+                        .append(((Line) text).getLanguage())
+                        .append("\n\t\t\tangle = ")
+                        .append(((Line) text).getAngle());
             }
+            res.add(linRes);
         }
 
+        Log.d(TAG, "Result: \n" + id.toString());
         overlay.add(lineOverlay);
 
-
+        StringBuilder builder = new StringBuilder();
+        for(StringBuilder r : res) {
+            builder.append(r).append("\n");
+        }
 
     }
 }
