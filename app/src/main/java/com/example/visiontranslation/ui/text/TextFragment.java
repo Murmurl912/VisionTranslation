@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeechService;
@@ -22,10 +23,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.visiontranslation.R;
+import com.example.visiontranslation.animation.FloatingActionButtonAnimation;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
 import com.example.visiontranslation.ui.MainActivity;
 import com.google.android.gms.vision.L;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Locale;
 
@@ -41,6 +44,11 @@ public class TextFragment extends Fragment {
     private boolean isTTSReady = false;
 
     public final String TAG = "TextFragment";
+    private FloatingActionButton home;
+    private FloatingActionButton gallary;
+    private FloatingActionButton voice;
+    private FloatingActionButton lens;
+    private boolean isRotated = false;
 
     public TextFragment() {
         // Required empty public constructor
@@ -173,6 +181,9 @@ public class TextFragment extends Fragment {
             source.clearFocus();
 
         });
+
+        initializeActionButton(view);
+
     }
 
     private void speak(@NonNull String text, Locale locale) {
@@ -218,11 +229,53 @@ public class TextFragment extends Fragment {
         }
     }
 
+    private void initializeActionButton(View view) {
+        home = view.findViewById(R.id.main_home);
+        gallary = view.findViewById(R.id.main_gallary);
+        voice = view.findViewById(R.id.main_voice);
+        lens = view.findViewById(R.id.main_lens);
+        FloatingActionButtonAnimation.init(gallary);
+        FloatingActionButtonAnimation.init(voice);
+        FloatingActionButtonAnimation.init(lens);
+
+        home.setOnClickListener(v->{
+            if(!isRotated) {
+                FloatingActionButtonAnimation.rotateFab(home, true);
+                FloatingActionButtonAnimation.showIn(gallary);
+                FloatingActionButtonAnimation.showIn(voice);
+                FloatingActionButtonAnimation.showIn(lens);
+            } else {
+                FloatingActionButtonAnimation.rotateFab(home, false);
+                FloatingActionButtonAnimation.showOut(gallary);
+                FloatingActionButtonAnimation.showOut(voice);
+                FloatingActionButtonAnimation.showOut(lens);
+            }
+            isRotated = !isRotated;
+        });
+
+        lens.setOnClickListener(v->{
+            home.performClick();
+            Navigation.findNavController(lens).navigate(R.id.action_textFragment_to_cameraFragment);
+        });
+
+        gallary.setOnClickListener(v->{
+            home.performClick();
+            Navigation.findNavController(gallary).navigate(R.id.action_textFragment_to_cameraFragment);
+
+        });
+
+        voice.setOnClickListener(v->{
+            home.performClick();
+            Navigation.findNavController(voice).navigate(R.id.action_textFragment_to_voiceFragment);
+
+        });
+    }
 
 
     private void clearText() {
 
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

@@ -8,6 +8,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -44,90 +46,21 @@ public class MainActivity extends AppCompatActivity {
     private Spinner sourceSpinner;
     private Spinner targetSpinner;
     private List<String> languages;
-    private boolean isRotated = false;
-    private ViewPager viewPager;
-    private FloatingActionButton home;
-    private FloatingActionButton gallary;
-    private FloatingActionButton voice;
-    private FloatingActionButton lens;
+
+    private Fragment mainNavFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() called");
         setContentView(R.layout.activity_main);
-        initializeViewPager();
         initializeSpinner();
-
-        home = findViewById(R.id.main_home);
-        gallary = findViewById(R.id.main_gallary);
-        voice = findViewById(R.id.main_voice);
-        lens = findViewById(R.id.main_lens);
-        FloatingActionButtonAnimation.init(gallary);
-        FloatingActionButtonAnimation.init(voice);
-        FloatingActionButtonAnimation.init(lens);
-
-        home.setOnClickListener(v->{
-            if(!isRotated) {
-                FloatingActionButtonAnimation.rotateFab(home, true);
-                FloatingActionButtonAnimation.showIn(gallary);
-                FloatingActionButtonAnimation.showIn(voice);
-                FloatingActionButtonAnimation.showIn(lens);
-            } else {
-                FloatingActionButtonAnimation.rotateFab(home, false);
-                FloatingActionButtonAnimation.showOut(gallary);
-                FloatingActionButtonAnimation.showOut(voice);
-                FloatingActionButtonAnimation.showOut(lens);
-            }
-            isRotated = !isRotated;
-        });
-
-        lens.setOnClickListener(v->{
-            home.performClick();
-            viewPager.setCurrentItem(1);
-        });
-
-        gallary.setOnClickListener(v->{
-            home.performClick();
-            viewPager.setCurrentItem(1);
-        });
-
-        voice.setOnClickListener(v->{
-            home.performClick();
-            viewPager.setCurrentItem(2);
-        });
-
+        initialFragment();
         mainDrawerLayout = findViewById(R.id.main_drawer_layout);
     }
 
-    private void initializeViewPager() {
-        viewPager = findViewById(R.id.main_view_pager);
-        PagerAdapter pagerAdapter = new MainFragmentAdapter(getSupportFragmentManager(), FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-        viewPager.setAdapter(pagerAdapter);
-        viewPager.setCurrentItem(0);
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if(position == 0) {
-                    ((View)home).setVisibility(View.VISIBLE);
-                } else {
-                    ((View)home).setVisibility(View.GONE);
-                    ((View)gallary).setVisibility(View.GONE);
-                    ((View)voice).setVisibility(View.GONE);
-                    ((View)lens).setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
+    private void initialFragment() {
+        mainNavFragment = getSupportFragmentManager().findFragmentById(R.id.main_nav_fragment);
     }
 
     private void initializeSpinner() {
@@ -216,18 +149,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+
         if(mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mainDrawerLayout.closeDrawer(GravityCompat.START);
             Helper.hideSoftKeyboard(this);
             return;
         }
-
-        if(viewPager.getCurrentItem() != 0) {
-            viewPager.setCurrentItem(0);
-            return;
-        }
-
         super.onBackPressed();
+
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        return NavHostFragment.findNavController(mainNavFragment).navigateUp();
     }
 
     @Override
@@ -259,48 +193,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause() called");
-    }
-
-
-    private class MainFragmentAdapter extends FragmentPagerAdapter {
-
-        public TextFragment textFragment;
-        public CameraFragment cameraFragment;
-        public VoiceFragment voiceFragment;
-
-        private MainFragmentAdapter(@NonNull FragmentManager fm, int behavior) {
-            super(fm, behavior);
-
-        }
-
-        @NonNull
-        @Override
-        public Fragment getItem(int position) {
-            if(position == 0) {
-                if(textFragment == null) {
-                    textFragment = new TextFragment();
-                }
-                return textFragment;
-            }
-
-            if(position == 1) {
-                if(cameraFragment == null) {
-                    cameraFragment = new CameraFragment();
-                }
-                return cameraFragment;
-            }
-
-            if(voiceFragment == null) {
-                voiceFragment = new VoiceFragment();
-            }
-            return voiceFragment;
-        }
-
-        @Override
-        public int getCount() {
-            return 3;
-        }
-
     }
 
 }
