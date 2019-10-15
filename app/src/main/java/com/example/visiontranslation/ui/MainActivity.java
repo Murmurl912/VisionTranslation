@@ -3,6 +3,7 @@ package com.example.visiontranslation.ui;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -19,10 +20,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.example.visiontranslation.R;
+import com.example.visiontranslation.animation.FloatingActionButtonAnimation;
+import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
 import com.example.visiontranslation.ui.camera.CameraFragment;
 import com.example.visiontranslation.ui.text.TextFragment;
 import com.example.visiontranslation.ui.voice.VoiceFragment;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +44,12 @@ public class MainActivity extends AppCompatActivity {
     private Spinner sourceSpinner;
     private Spinner targetSpinner;
     private List<String> languages;
+    private boolean isRotated = false;
+    private ViewPager viewPager;
+    private FloatingActionButton home;
+    private FloatingActionButton gallary;
+    private FloatingActionButton voice;
+    private FloatingActionButton lens;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +58,76 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initializeViewPager();
         initializeSpinner();
+
+        home = findViewById(R.id.main_home);
+        gallary = findViewById(R.id.main_gallary);
+        voice = findViewById(R.id.main_voice);
+        lens = findViewById(R.id.main_lens);
+        FloatingActionButtonAnimation.init(gallary);
+        FloatingActionButtonAnimation.init(voice);
+        FloatingActionButtonAnimation.init(lens);
+
+        home.setOnClickListener(v->{
+            if(!isRotated) {
+                FloatingActionButtonAnimation.rotateFab(home, true);
+                FloatingActionButtonAnimation.showIn(gallary);
+                FloatingActionButtonAnimation.showIn(voice);
+                FloatingActionButtonAnimation.showIn(lens);
+            } else {
+                FloatingActionButtonAnimation.rotateFab(home, false);
+                FloatingActionButtonAnimation.showOut(gallary);
+                FloatingActionButtonAnimation.showOut(voice);
+                FloatingActionButtonAnimation.showOut(lens);
+            }
+            isRotated = !isRotated;
+        });
+
+        lens.setOnClickListener(v->{
+            home.performClick();
+            viewPager.setCurrentItem(1);
+        });
+
+        gallary.setOnClickListener(v->{
+            home.performClick();
+            viewPager.setCurrentItem(1);
+        });
+
+        voice.setOnClickListener(v->{
+            home.performClick();
+            viewPager.setCurrentItem(2);
+        });
+
+        mainDrawerLayout = findViewById(R.id.main_drawer_layout);
     }
 
     private void initializeViewPager() {
-        ViewPager viewPager = findViewById(R.id.main_view_pager);
+        viewPager = findViewById(R.id.main_view_pager);
         PagerAdapter pagerAdapter = new MainFragmentAdapter(getSupportFragmentManager(), FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setCurrentItem(0);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if(position == 0) {
+                    ((View)home).setVisibility(View.VISIBLE);
+                } else {
+                    ((View)home).setVisibility(View.GONE);
+                    ((View)gallary).setVisibility(View.GONE);
+                    ((View)voice).setVisibility(View.GONE);
+                    ((View)lens).setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     private void initializeSpinner() {
@@ -141,6 +215,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if(mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mainDrawerLayout.closeDrawer(GravityCompat.START);
+            Helper.hideSoftKeyboard(this);
+            return;
+        }
+
+        if(viewPager.getCurrentItem() != 0) {
+            viewPager.setCurrentItem(0);
+            return;
+        }
+
+        super.onBackPressed();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         Log.d(TAG, "onStart() called");
@@ -170,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         Log.d(TAG, "onPause() called");
     }
+
 
     private class MainFragmentAdapter extends FragmentPagerAdapter {
 

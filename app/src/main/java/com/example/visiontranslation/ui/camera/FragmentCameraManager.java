@@ -3,6 +3,7 @@ package com.example.visiontranslation.ui.camera;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -11,14 +12,11 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.core.ImageCapture;
 
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.detector.text.VisionTextDetector;
@@ -26,11 +24,8 @@ import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.overlay.ElementDrawable;
 import com.example.visiontranslation.overlay.GraphicsOverlay;
 import com.example.visiontranslation.overlay.LineDrawable;
-import com.example.visiontranslation.overlay.TextBlockDrawable;
-import com.example.visiontranslation.tracker.GenericTracker;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
-import com.google.android.gms.vision.L;
 import com.google.android.gms.vision.text.Element;
 import com.google.android.gms.vision.text.Line;
 import com.google.android.gms.vision.text.Text;
@@ -44,15 +39,9 @@ import com.otaliastudios.cameraview.PictureResult;
 
 import org.opencv.android.InstallCallbackInterface;
 import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Rect2d;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FragmentCameraManager
         extends CameraListener
@@ -111,7 +100,7 @@ public class FragmentCameraManager
         }
         overlay.remove(lineOverlay);
         lineOverlay.clear();
-        detector.setPreviewSize(new Size(cameraView.getWidth(), cameraView.getHeight()));
+        detector.setProcessingSize(new Size(cameraView.getWidth(), cameraView.getHeight()));
         detector.fireup();
     }
 
@@ -220,7 +209,7 @@ public class FragmentCameraManager
                     for(Text text : line.getComponents()) {
                         Element element = (Element)text;
                         elements.add(element);
-                        elementDrawable.add(new ElementDrawable(element, frameSize));
+                        elementDrawable.add(new ElementDrawable(element, frameSize, new Size(cameraView.getWidth(), cameraView.getHeight())));
                     }
                 }
             }
@@ -258,11 +247,11 @@ public class FragmentCameraManager
 
         switch (v.getId()) {
             case R.id.main_camera_view: {
-
+                onCameraViewTouch(event);
             } break;
 
             case R.id.main_camera_view_water_mark: {
-
+                onWaterMarkTouch(event);
             } break;
 
             default: {
@@ -270,6 +259,37 @@ public class FragmentCameraManager
             }
         }
         return false;
+    }
+
+    private void onCameraViewTouch(MotionEvent event) {
+
+    }
+
+    private void onWaterMarkTouch(MotionEvent event) {
+        if(elementDrawable == null) {
+            return;
+        }
+
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN: {
+                float x = event.getX();
+                float y = event.getY();
+
+                for(Drawable drawable : elementDrawable) {
+                    ElementDrawable e = (ElementDrawable)drawable;
+                    if(e.contain(new Point((int)x, (int)y))){
+                        e.setSelected(true);
+                        pausedOverlay.update();
+                        return;
+                    }
+                }
+            }
+
+            default: {
+
+            }
+        }
     }
 
     @Override

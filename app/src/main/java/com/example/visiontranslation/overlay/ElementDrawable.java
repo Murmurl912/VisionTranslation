@@ -16,6 +16,7 @@ import android.util.SizeF;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.visiontranslation.helper.Helper;
 import com.google.android.gms.vision.text.Element;
 
 public class ElementDrawable extends Drawable {
@@ -28,8 +29,10 @@ public class ElementDrawable extends Drawable {
     private int color;
     private boolean isSelected;
     private Rect rect;
+    private Size canvasSize;
+    private SizeF ratio;
 
-    public ElementDrawable(@NonNull Element element, @NonNull Size frameSize) {
+    public ElementDrawable(@NonNull Element element, @NonNull Size frameSize, @NonNull Size viewSize) {
         this.element = element;
         this.frameSize = frameSize;
         this.points = element.getCornerPoints();
@@ -37,13 +40,21 @@ public class ElementDrawable extends Drawable {
         this.paint = new Paint();
         this.isSelected = false;
         this.color = Color.GREEN;
+        this.ratio = new SizeF((float)viewSize.getWidth() / frameSize.getWidth(), (float)viewSize.getHeight() / frameSize.getHeight());
+        this.points = new Point[]{
+                new Point((int)(points[0].x * ratio.getWidth()), (int)(points[0].y * ratio.getHeight())),
+                new Point((int)(points[1].x * ratio.getWidth()), (int)(points[1].y * ratio.getHeight())),
+                new Point((int)(points[2].x * ratio.getWidth()), (int)(points[2].y * ratio.getHeight())),
+                new Point((int)(points[3].x * ratio.getWidth()), (int)(points[3].y * ratio.getHeight()))
+        };
     }
 
-    public void contain(Point point) {
 
+    public boolean contain(Point point) {
+        return Helper.isPolygonContainsPoint(points, point);
     }
 
-    private void setSelected(boolean selected) {
+    public void setSelected(boolean selected) {
         this.isSelected = selected;
         if(selected) {
             this.color = Color.RED;
@@ -55,37 +66,33 @@ public class ElementDrawable extends Drawable {
     @Override
     public void draw(@NonNull Canvas canvas) {
         Rect box = canvas.getClipBounds();
-        if(box.isEmpty()) {
-            box = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
-        }
 
-        SizeF ratio = new SizeF((float)box.width() / frameSize.getWidth(), (float)box.height() / frameSize.getHeight());
 
-        paint.setColor(Color.RED);
-        paint.setStrokeWidth(5);
+        paint.setStrokeWidth(3);
+        paint.setColor(color);
         canvas.drawLine(
-                points[0].x * ratio.getWidth(),
-                points[0].y * ratio.getHeight(),
-                points[1].x * ratio.getWidth(),
-                points[1].y * ratio.getHeight(),
+                points[0].x,
+                points[0].y,
+                points[1].x,
+                points[1].y,
                 paint);
         canvas.drawLine(
-                points[1].x * ratio.getWidth(),
-                points[1].y * ratio.getHeight(),
-                points[2].x * ratio.getWidth(),
-                points[2].y * ratio.getHeight(),
+                points[1].x,
+                points[1].y,
+                points[2].x,
+                points[2].y,
                 paint);
         canvas.drawLine(
-                points[2].x * ratio.getWidth(),
-                points[2].y * ratio.getHeight(),
-                points[3].x * ratio.getWidth(),
-                points[3].y * ratio.getHeight(),
+                points[2].x,
+                points[2].y,
+                points[3].x,
+                points[3].y,
                 paint);
         canvas.drawLine(
-                points[3].x * ratio.getWidth(),
-                points[3].y * ratio.getHeight(),
-                points[0].x * ratio.getWidth(),
-                points[0].y * ratio.getHeight(),
+                points[3].x,
+                points[3].y,
+                points[0].x,
+                points[0].y,
                 paint);
 
     }

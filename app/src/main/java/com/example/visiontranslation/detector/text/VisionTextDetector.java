@@ -1,7 +1,6 @@
 package com.example.visiontranslation.detector.text;
 
 import android.graphics.Bitmap;
-import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.util.Log;
 import android.util.Size;
@@ -23,13 +22,13 @@ public class VisionTextDetector implements FrameProcessor {
     public final String TAG = "VisionTextDetector";
     private TextRecognizer textRecognizer;
     private NV21ToBitmap nv21ToBitmap;
-    private Matrix matrix;
-    private boolean processing;
-    private boolean isReady;
-    private boolean isProcessing;
-    private Size previewSize;
+    private Matrix matrix = new Matrix();
+    private boolean isReady = false;
+    private Size processingSize;
     private Bitmap rotated;
     private final Object lock = new Object();
+    private boolean enableDetector = false;
+
     public VisionTextDetector() {
         textRecognizer = new TextRecognizer.Builder(
                 VisionTranslationApplication.getVisionTranslationApplication()
@@ -39,34 +38,37 @@ public class VisionTextDetector implements FrameProcessor {
                 VisionTranslationApplication.getVisionTranslationApplication()
                 .getApplicationContext()
         );
-        matrix = new Matrix();
-        processing = false;
-        isReady = false;
-        isProcessing = false;
     }
 
     public void setProcessor(@NonNull Detector.Processor<TextBlock> processor) {
         this.textRecognizer.setProcessor(processor);
         isReady = true;
     }
-    public void setPreviewSize(@NonNull Size previewSize) {
-        this.previewSize = previewSize;
+    public void setProcessingSize(@NonNull Size processingSize) {
+        synchronized (lock) {
+            this.processingSize = processingSize;
+        }
     }
 
     public void fireup() {
-        processing = true;
+        synchronized (lock){
+            enableDetector = true;
+        }
     }
 
     public void shutdown() {
-        processing = false;
+        synchronized (lock) {
+            enableDetector = false;
+        }
     }
 
     public Bitmap getFrame() {
-        return rotated;
+        synchronized (lock) {
+            return rotated;
+        }
     }
 
     public void destroy() {
-        processing = false;
         isReady = false;
         textRecognizer.release();
     }
@@ -91,13 +93,13 @@ public class VisionTextDetector implements FrameProcessor {
         }
     }
 
-    public Bitmap rotateAndCropImage(final Bitmap bitmap, final Size previewSize, int rotation) {
+    private Bitmap rotateAndCropImage(final Bitmap bitmap, int rotation) {
         rotation = Math.abs(rotation) / 90;
         Bitmap image = bitmap;
 
         Matrix matrix = new Matrix();
         matrix.setRotate(rotation * 90);
-        float ratio = ((float)previewSize.getHeight()) / previewSize.getWidth();
+        float ratio = ((float)processingSize.getHeight()) / processingSize.getWidth();
         float height = bitmap.getHeight();
         float width = height * ratio;
         image = Bitmap.createBitmap(
@@ -115,7 +117,7 @@ public class VisionTextDetector implements FrameProcessor {
     @Override
     public void process(@NonNull Frame frame) {
 
-        if(!textRecognizer.isOperational() || !isReady) {
+        if(!textRecognizer.isOperational() || !isReady || !enableDetector) {
             return;
         }
 
@@ -124,7 +126,7 @@ public class VisionTextDetector implements FrameProcessor {
             Bitmap bitmap = nv21ToBitmap.nv21ToBitmap(frame.getData(), frame.getSize().getWidth(), frame.getSize().getHeight());
             long startRotatingTime = System.currentTimeMillis();
             matrix.setRotate(frame.getRotation());
-            rotated = rotateAndCropImage(bitmap, previewSize, frame.getRotation());
+            rotated = rotateAndCropImage(bitmap, frame.getRotation());
             long startConvertTime = System.currentTimeMillis();
             com.google.android.gms.vision.Frame image = new com.google.android.gms.vision.Frame.Builder()
                     .setBitmap(rotated)

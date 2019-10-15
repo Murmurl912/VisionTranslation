@@ -41,7 +41,6 @@ public class CameraFragment extends Fragment {
 
     private FragmentCameraManager manager;
     private CameraView cameraView;
-    private ImageButton imageChoose;
     private ImageButton pauseButton;
     private ImageButton flashButton;
 
@@ -61,16 +60,11 @@ public class CameraFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated() called");
-        imageChoose = view.findViewById(R.id.main_camera_image_choose);
         pauseButton = view.findViewById(R.id.main_camera_pause_button);
         flashButton = view.findViewById(R.id.main_camera_flash);
 
         cameraView = view.findViewById(R.id.main_camera_view);
 
-
-        imageChoose.setOnClickListener(v->{
-            startChooseImageActivity();
-        });
         pauseButton.setOnClickListener(v->{
             onPauseButtonClicked();
         });
@@ -146,11 +140,6 @@ public class CameraFragment extends Fragment {
         return true;
     }
 
-    public void startChooseImageActivity() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
-    }
 
     private void onPickImageSuccess(Intent data) {
 

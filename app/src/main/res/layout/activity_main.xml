@@ -84,23 +84,71 @@
             </androidx.cardview.widget.CardView>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.viewpager.widget.ViewPager android:id="@+id/main_view_pager"
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
-        <LinearLayout
+            android:fillViewport="true"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+            <androidx.viewpager.widget.ViewPager android:id="@+id/main_view_pager"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                />
+        </HorizontalScrollView>
+
+
+
+        <LinearLayout android:orientation="vertical"
             android:layout_gravity="bottom|end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp">
+
             <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:elevation="0dp"
+                android:layout_margin="8dp"
+                android:id="@+id/main_gallary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"
-                android:focusableInTouchMode="true"
                 android:focusable="true"
                 app:rippleColor="@color/white"
+                android:src="@drawable/ic_gallary_dark"
                 app:fabSize="mini"/>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:elevation="0dp"
+                android:layout_margin="8dp"
+                android:id="@+id/main_voice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                app:rippleColor="@color/white"
+                android:src="@drawable/ic_voice_dark"
+                app:fabSize="mini"/>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:elevation="0dp"
+                android:layout_margin="8dp"
+                android:id="@+id/main_lens"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                app:rippleColor="@color/white"
+                android:src="@drawable/ic_lens_dark"
+                app:fabSize="mini"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:elevation="0dp"
+                android:layout_margin="8dp"
+                android:id="@+id/main_home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                app:rippleColor="@color/white"
+                android:src="@drawable/ic_up_dark"
+                app:fabSize="mini"/>
+
         </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

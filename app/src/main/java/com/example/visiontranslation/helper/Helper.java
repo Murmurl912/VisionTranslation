@@ -2,6 +2,7 @@ package com.example.visiontranslation.helper;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Point;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.View;
@@ -150,4 +151,29 @@ public class Helper {
         });
         thread.start();
     }
+
+    public static boolean isPolygonContainsPoint(Point[] mPoints, Point point) {
+        int nCross = 0;
+        for (int i = 0; i < mPoints.length; i++) {
+            Point p1 = mPoints[i];
+            Point p2 = mPoints[(i + 1) % mPoints.length];
+            // 取多边形任意一个边,做点point的水平延长线,求解与当前边的交点个数
+            // p1p2是水平线段,要么没有交点,要么有无限个交点
+            if (p1.y == p2.y)
+                continue;
+            // point 在p1p2 底部 --> 无交点
+            if (point.y < Math.min(p1.y, p2.y))
+                continue;
+            // point 在p1p2 顶部 --> 无交点
+            if (point.y >= Math.max(p1.y, p2.y))
+                continue;
+            // 求解 point点水平线与当前p1p2边的交点的 X 坐标
+            double x = (point.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
+            if (x > point.x) // 当x=point.x时,说明point在p1p2线段上
+                nCross++; // 只统计单边交点
+        }
+        // 单边交点为偶数，点在多边形之外 ---
+        return (nCross % 2 == 1);
+    }
 }
+
