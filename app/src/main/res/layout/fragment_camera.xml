@@ -10,7 +10,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
@@ -19,39 +19,69 @@
             android:id="@+id/main_camera_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_widthPercent="100%"
-            app:layout_aspectRatio="133%"
             app:scaleType="centerCrop"
             app:cameraAudio="off"
             app:cameraPreview="glSurface"
             app:cameraGestureTap="autoFocus"
             app:cameraFlash="off"
-            app:cameraEngine="camera2">
-            <ImageView android:id="@+id/main_camera_view_water_mark"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+            app:cameraEngine="camera2"
+            app:cameraUseDeviceOrientation="true">
         </com.otaliastudios.cameraview.CameraView>
+        <ImageView android:id="@+id/main_camera_view_water_mark"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginBottom="4dp"
-        android:padding="4dp"
-        app:cardCornerRadius="8dp"
-        >
-        <TextView android:id="@+id/main_camera_result"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="4dp"
+        app:cardCornerRadius="8dp">
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textIsSelectable="true"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:singleLine="false"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:background="#00000000"
-            />
+            android:layout_height="wrap_content">
+
+
+            <LinearLayout
+                android:minHeight="0dp"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <ImageButton android:id="@+id/main_camera_speak_source_button"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:src="@drawable/ic_speak_dark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+
+            <TextView android:id="@+id/main_camera_source_edit_text"
+                android:background="@android:color/transparent"
+                android:gravity="top"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
+                android:importantForAutofill="no" />
+
+            <ImageButton
+                android:id="@+id/main_camera_translate_button"
+                android:minHeight="0dp"
+                android:layout_gravity="end"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_send_dark"/>
+        </LinearLayout>
+
+
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"

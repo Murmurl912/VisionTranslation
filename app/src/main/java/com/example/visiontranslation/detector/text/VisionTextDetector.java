@@ -28,8 +28,8 @@ public class VisionTextDetector implements FrameProcessor {
     private boolean isReady;
     private boolean isProcessing;
     private Size previewSize;
-    Bitmap rotated;
-
+    private Bitmap rotated;
+    private final Object lock = new Object();
     public VisionTextDetector() {
         textRecognizer = new TextRecognizer.Builder(
                 VisionTranslationApplication.getVisionTranslationApplication()
@@ -115,26 +115,15 @@ public class VisionTextDetector implements FrameProcessor {
     @Override
     public void process(@NonNull Frame frame) {
 
-        if(isProcessing) {
+        if(!textRecognizer.isOperational() || !isReady) {
             return;
         }
 
-        if(!processing || !textRecognizer.isOperational() || !isReady) {
-            return;
-        }
-
-        // lock
-        isProcessing = true;
-        try {
-
-
+        synchronized (lock) {
             long startProcessingTime = System.currentTimeMillis();
             Bitmap bitmap = nv21ToBitmap.nv21ToBitmap(frame.getData(), frame.getSize().getWidth(), frame.getSize().getHeight());
             long startRotatingTime = System.currentTimeMillis();
             matrix.setRotate(frame.getRotation());
-            if(rotated != null && !rotated.isRecycled()) {
-                rotated.recycle();
-            }
             rotated = rotateAndCropImage(bitmap, previewSize, frame.getRotation());
             long startConvertTime = System.currentTimeMillis();
             com.google.android.gms.vision.Frame image = new com.google.android.gms.vision.Frame.Builder()
@@ -155,12 +144,6 @@ public class VisionTextDetector implements FrameProcessor {
                     + "\n\tDetecting Time: " + (endDetectingTime - startDetectingTime)
             );
 
-
-        } catch (Exception e) {
-            isProcessing = false;
-        } finally {
-            // unlock
-            isProcessing = false;
         }
 
     }

@@ -2,6 +2,7 @@ package com.example.visiontranslation.ui.camera;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -22,11 +23,15 @@ import androidx.camera.core.ImageCapture;
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.detector.text.VisionTextDetector;
 import com.example.visiontranslation.helper.Helper;
+import com.example.visiontranslation.overlay.ElementDrawable;
 import com.example.visiontranslation.overlay.GraphicsOverlay;
 import com.example.visiontranslation.overlay.LineDrawable;
 import com.example.visiontranslation.overlay.TextBlockDrawable;
 import com.example.visiontranslation.tracker.GenericTracker;
 import com.google.android.gms.vision.Detector;
+import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.L;
+import com.google.android.gms.vision.text.Element;
 import com.google.android.gms.vision.text.Line;
 import com.google.android.gms.vision.text.Text;
 import com.google.android.gms.vision.text.TextBlock;
@@ -44,14 +49,17 @@ import org.opencv.core.Rect2d;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FragmentCameraManager
         extends CameraListener
         implements
             View.OnTouchListener,
             Detector.Processor<TextBlock>,
-            ViewTreeObserver.OnGlobalLayoutListener,
-            GenericTracker.TrackingResultCallback {
+            ViewTreeObserver.OnGlobalLayoutListener {
 
     public final String TAG = "FragmentCameraManager";
 
@@ -59,36 +67,29 @@ public class FragmentCameraManager
     private GraphicsOverlay overlay;
 
     private VisionTextDetector detector;
-
-    private Drawable pausedFrameOverlay;
     private List<Drawable> lineOverlay;
     private List<Line> lines;
 
-    private Drawable trackerDrawable;
-    private GenericTracker tracker;
+    private List<Drawable> elementDrawable;
+    private List<Element> elements;
+    private GraphicsOverlay pausedOverlay;
 
     private boolean isFrozen;
+    private boolean isChanging;
+
     private ImageView waterMark;
 
     public FragmentCameraManager(CameraView cameraView) {
         this.cameraView = cameraView;
         overlay = new GraphicsOverlay(cameraView);
         isFrozen = false;
-        waterMark = cameraView.findViewById(R.id.main_camera_view_water_mark);
-        setUpCamera();
-
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private void setUpCamera() {
-        cameraView.setOnTouchListener(this);
-        cameraView.addCameraListener(this);
-        cameraView.getViewTreeObserver().addOnGlobalLayoutListener(this);
-    }
-
-
-    public Size getPreviewSize() {
-        return new Size(cameraView.getWidth(), cameraView.getHeight());
+        isChanging = false;
+        waterMark = ((View)cameraView.getParent()).findViewById(R.id.main_camera_view_water_mark);
+        pausedOverlay = new GraphicsOverlay(waterMark);
+        waterMark.setOnTouchListener(this);
+        this.cameraView.addCameraListener(this);
+        this.cameraView.setOnTouchListener(this);
+        this.cameraView.getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
 
     public void setDetector(@NonNull VisionTextDetector detector) {
@@ -105,6 +106,9 @@ public class FragmentCameraManager
     }
 
     public void startDetector() {
+        if(isChanging || isFrozen) {
+            return;
+        }
         overlay.remove(lineOverlay);
         lineOverlay.clear();
         detector.setPreviewSize(new Size(cameraView.getWidth(), cameraView.getHeight()));
@@ -119,68 +123,110 @@ public class FragmentCameraManager
         }
     }
 
-    private void setTracker() {
-        tracker = new GenericTracker();
-        tracker.setTrackingResultCallback(this);
-    }
-
-    private void startTracker() {
-
-    }
-
-    private void closeTracker() {
-
-    }
-
-
-    public void destroy() {
-        if(detector != null) {
-            detector.destroy();
-        }
-    }
-
     public boolean isFrozen() {
         return isFrozen;
     }
 
+    public boolean isChanging() {
+        return isChanging;
+    }
     public void pauseFrame() {
-        if(isFrozen) {
-            return;
-        }
-        cameraView.takePictureSnapshot();
+      if(isChanging) {
+          return;
+      }
+      if(isFrozen) {
+          return;
+      }
+      isChanging = true;
+      pause();
     }
 
     public void resumeFrame() {
+        if(isChanging) {
+            return;
+        }
         if(!isFrozen) {
             return;
         }
-        cameraView.open();
-        isFrozen = false;
-        waterMark.setVisibility(View.INVISIBLE);
-        startDetector();
+        isChanging = true;
+        resume();
     }
 
-    private void onPauseFrame(Bitmap frame) {
+    private void pause() {
+        closeDetector();
+        cameraView.close();
+        Bitmap bitmap = detector.getFrame();
+        waterMark.setImageBitmap(bitmap);
+        waterMark.setVisibility(View.VISIBLE);
+        processPausedFrame(bitmap);
+        isFrozen = true;
+        isChanging = false;
+    }
+
+    private void resume() {
+        closeDetector();
+        cameraView.open();
+        waterMark.setVisibility(View.GONE);
+        startDetector();
+        isFrozen = false;
+        isChanging = false;
+    }
+
+    synchronized private void onPauseFrame(Bitmap frame, int rotation) {
         if(frame == null) {
             Toast.makeText(cameraView.getContext(), "Freezing Frame Failed!", Toast.LENGTH_SHORT).show();
+            isChanging = false;
             return;
         }
-
-        waterMark.setImageBitmap(frame);
+        Matrix matrix = new Matrix();
+        matrix.setRotate(rotation);
+        Bitmap map = Bitmap.createBitmap(frame, 0, 0, frame.getWidth(), frame.getHeight(), matrix, false);
+        waterMark.setImageBitmap(map);
         waterMark.setVisibility(View.VISIBLE);
         closeDetector();
         cameraView.close();
         isFrozen = true;
-        processPausedFrame(frame);
+        isChanging = false;
     }
 
     private void processPausedFrame(@NonNull Bitmap frame) {
-
+        if(detector != null) {
+            Frame gframe = new Frame.Builder().setBitmap(frame).build();
+            detector.detect(gframe, new VisionTextDetector.DetectionCallback() {
+                @Override
+                public void onDetectionComplete(boolean isSuccess, SparseArray<TextBlock> detections) {
+                    onDetectPausedFrameComplete(isSuccess, detections, new Size(frame.getWidth(), frame.getHeight()));
+                }
+            });
+        }
     }
 
-    @Override
-    public void onTrackingResult(boolean isSuccess, org.opencv.core.Size frameSize, Rect2d relativeCoordinate) {
+    private void onDetectPausedFrameComplete(boolean isSuccess, SparseArray<TextBlock> detections, Size frameSize) {
+        if(!isSuccess) {
+            return;
+        }
+        new Thread(()->{
+            if(elementDrawable == null) {
+                elementDrawable = new ArrayList<>();
+            }
+            if(elements == null) {
+                elements = new ArrayList<>();
+            }
+            pausedOverlay.clear();
+            elementDrawable.clear();
+            for(int i = 0; i < detections.size(); i++) {
+                TextBlock block = detections.valueAt(i);
+                for(Text line : block.getComponents()) {
+                    for(Text text : line.getComponents()) {
+                        Element element = (Element)text;
+                        elements.add(element);
+                        elementDrawable.add(new ElementDrawable(element, frameSize));
+                    }
+                }
+            }
+            pausedOverlay.add(elementDrawable);
 
+        }).start();
     }
 
     @Override
@@ -209,12 +255,33 @@ public class FragmentCameraManager
     @Override
     @SuppressLint("ClickableViewAccessibility")
     public boolean onTouch(View v, MotionEvent event) {
+
+        switch (v.getId()) {
+            case R.id.main_camera_view: {
+
+            } break;
+
+            case R.id.main_camera_view_water_mark: {
+
+            } break;
+
+            default: {
+
+            }
+        }
         return false;
     }
 
     @Override
     public void onCameraOpened(@NonNull CameraOptions options) {
         super.onCameraOpened(options);
+        Log.d(TAG, "Camera Opened!");
+    }
+
+    @Override
+    public void onCameraClosed() {
+        super.onCameraClosed();
+        Log.d(TAG, "Camera Closed");
     }
 
     @Override
@@ -222,7 +289,7 @@ public class FragmentCameraManager
         result.toBitmap(new BitmapCallback() {
             @Override
             public void onBitmapReady(@Nullable Bitmap bitmap) {
-                onPauseFrame(bitmap);
+                onPauseFrame(bitmap, result.getRotation());
             }
         });
     }

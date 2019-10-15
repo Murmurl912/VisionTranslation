@@ -128,8 +128,6 @@ public class CameraFragment extends Fragment {
         cameraView.setPlaySounds(false);
         manager = new FragmentCameraManager(cameraView);
         manager.setDetector(new VisionTextDetector());
-        manager.startDetector();
-
     }
 
     private void requestPermission() {
@@ -176,6 +174,9 @@ public class CameraFragment extends Fragment {
 
     private void onPauseButtonClicked() {
         if(cameraView != null) {
+            if(manager.isChanging()) {
+                return;
+            }
             if(manager.isFrozen()) {
                 pauseButton.setImageResource(R.drawable.ic_pase_circle_dark);
                 manager.resumeFrame();
