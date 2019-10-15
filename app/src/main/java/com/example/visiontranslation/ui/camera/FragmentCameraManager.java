@@ -3,11 +3,13 @@ package com.example.visiontranslation.ui.camera;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.Size;
+import android.util.SizeF;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,6 +26,7 @@ import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.overlay.ElementDrawable;
 import com.example.visiontranslation.overlay.GraphicsOverlay;
 import com.example.visiontranslation.overlay.LineDrawable;
+import com.example.visiontranslation.overlay.PathDrawable;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.Element;
@@ -67,6 +70,9 @@ public class FragmentCameraManager
     private boolean isChanging;
 
     private ImageView waterMark;
+    private PathDrawable pathDrawable;
+    private Path path;
+    private PointF pointF;
 
     public FragmentCameraManager(CameraView cameraView) {
         this.cameraView = cameraView;
@@ -94,7 +100,7 @@ public class FragmentCameraManager
 
     }
 
-    public void startDetector() {
+    private void startDetector() {
         if(isChanging || isFrozen) {
             return;
         }
@@ -104,7 +110,7 @@ public class FragmentCameraManager
         detector.fireup();
     }
 
-    public void closeDetector() {
+    private void closeDetector() {
         if(detector != null) {
             overlay.remove(lineOverlay);
             lineOverlay.clear();
@@ -119,6 +125,7 @@ public class FragmentCameraManager
     public boolean isChanging() {
         return isChanging;
     }
+
     public void pauseFrame() {
       if(isChanging) {
           return;
@@ -262,7 +269,24 @@ public class FragmentCameraManager
     }
 
     private void onCameraViewTouch(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                Log.d(TAG, "Action Down Position: " + event.getX() + ", " + event.getY());
+            } break;
 
+            case MotionEvent.ACTION_MOVE: {
+                Log.d(TAG, "Action Move  Position: " + event.getX() + ", " + event.getY());
+            } break;
+
+            case MotionEvent.ACTION_UP: {
+                Log.d(TAG, "Action Up Position: " + event.getX() + ", " + event.getY());
+            } break;
+
+            default: {
+                Log.d(TAG, "Action " + event.getAction() + " Position: " + event.getX() + ", " + event.getY());
+
+            }
+        }
     }
 
     private void onWaterMarkTouch(MotionEvent event) {
@@ -270,26 +294,53 @@ public class FragmentCameraManager
             return;
         }
 
+        if(path == null) {
+            path = new Path();
+            pathDrawable = new PathDrawable(path);
+            pausedOverlay.add(pathDrawable);
+        } else {
+            pausedOverlay.remove(pathDrawable);
+            pathDrawable = new PathDrawable(path);
+            pausedOverlay.add(pathDrawable);
+        }
+
+        float x = event.getX();
+        float y = event.getY();
+        Log.d(TAG, "Action: " + event.getAction() + " Position: " + event.getX() + ", " + event.getY());
+
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
-                float x = event.getX();
-                float y = event.getY();
-
-                for(Drawable drawable : elementDrawable) {
-                    ElementDrawable e = (ElementDrawable)drawable;
-                    if(e.contain(new Point((int)x, (int)y))){
+                path.moveTo(x, y);
+                pointF = new PointF(x, y);
+                for (Drawable drawable : elementDrawable) {
+                    ElementDrawable e = (ElementDrawable) drawable;
+                    if (e.contain(new Point((int) x, (int) y))) {
                         e.setSelected(true);
                         pausedOverlay.update();
-                        return;
+                        break;
                     }
                 }
-            }
+                pausedOverlay.update();
+            } break;
+
+            case MotionEvent.ACTION_UP: {
+                pausedOverlay.remove(pathDrawable);
+                path.reset();
+            } break;
+
+            case MotionEvent.ACTION_MOVE: {
+                path.quadTo(pointF.x, pointF.y, x, y);
+                pausedOverlay.update();
+            } break;
 
             default: {
 
             }
         }
+
+        pointF.set(x, y);
+
     }
 
     @Override

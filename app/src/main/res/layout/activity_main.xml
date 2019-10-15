@@ -84,7 +84,13 @@
             </androidx.cardview.widget.CardView>
         </com.google.android.material.appbar.AppBarLayout>
 
+        <fragment
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
         <HorizontalScrollView
+            android:nestedScrollingEnabled="true"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true"
