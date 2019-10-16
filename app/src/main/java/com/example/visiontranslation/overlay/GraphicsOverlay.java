@@ -77,7 +77,6 @@ public class GraphicsOverlay  {
     public void update()  {
         view.getHandler().post(()->{
             view.invalidate();
-
         });
     }
 

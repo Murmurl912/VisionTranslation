@@ -101,7 +101,7 @@ public class FragmentCameraManager
     }
 
     private void startDetector() {
-        if(isChanging || isFrozen) {
+        if(isChanging || isFrozen || detector == null) {
             return;
         }
         overlay.remove(lineOverlay);
@@ -243,9 +243,6 @@ public class FragmentCameraManager
             }
         });
 
-        if(detector != null) {
-            startDetector();
-        }
     }
 
     @Override
@@ -343,15 +340,21 @@ public class FragmentCameraManager
 
     }
 
+    private void onTextSelected() {
+
+    }
+
     @Override
     public void onCameraOpened(@NonNull CameraOptions options) {
         super.onCameraOpened(options);
         Log.d(TAG, "Camera Opened!");
+        startDetector();
     }
 
     @Override
     public void onCameraClosed() {
         super.onCameraClosed();
+        closeDetector();
         Log.d(TAG, "Camera Closed");
     }
 
@@ -439,4 +442,6 @@ public class FragmentCameraManager
         }
 
     }
+
+
 }
