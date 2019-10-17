@@ -12,15 +12,18 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
+import android.util.SizeF;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.detector.text.VisionTextDetector;
+import com.example.visiontranslation.vision.text.VisionTextProcessor;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.controls.Flash;
 
@@ -42,8 +45,13 @@ public class CameraFragment extends Fragment {
     private CameraView cameraView;
     private ImageButton pauseButton;
     private ImageButton flashButton;
+    private ImageView waterMark;
 
     private CameraManager manager;
+
+    private VisionTextProcessor textProcessor;
+    private VisionTextProcessorBridge textProcessorBridge;
+    private VisionTextResultProcessor resultProcessor;
 
     public CameraFragment() {
         // Required empty public constructor
@@ -65,6 +73,7 @@ public class CameraFragment extends Fragment {
         flashButton = view.findViewById(R.id.main_camera_flash);
 
         cameraView = view.findViewById(R.id.main_camera_view);
+        waterMark = view.findViewById(R.id.main_camera_view_water_mark);
         manager = new CameraManager(cameraView);
         pauseButton.setOnClickListener(v->{
             onPauseButtonClicked();
@@ -72,6 +81,7 @@ public class CameraFragment extends Fragment {
         flashButton.setOnClickListener(v->{
             onFlashButtonClicked();
         });
+        addFrameProcessor();
     }
 
     @Override
@@ -119,6 +129,8 @@ public class CameraFragment extends Fragment {
         super.onResume();
         Log.d(TAG, "onResume Called");
         manager.openCamera(true);
+        manager.addFrameProcessor(textProcessorBridge);
+
     }
 
     @Override
@@ -126,6 +138,7 @@ public class CameraFragment extends Fragment {
         super.onStop();
         Log.d(TAG,"onStop Called");
         manager.openCamera(false);
+        manager.removeFrameProcessor(textProcessorBridge);
     }
 
     @Override
@@ -136,6 +149,7 @@ public class CameraFragment extends Fragment {
 
     private void startCamera() {
         cameraView.setPlaySounds(false);
+
     }
 
     private void requestPermission() {
@@ -182,6 +196,11 @@ public class CameraFragment extends Fragment {
         }
     }
 
-
+    private void addFrameProcessor() {
+        textProcessor = new VisionTextProcessor(getContext());
+        textProcessorBridge = new VisionTextProcessorBridge(textProcessor, new SizeF(cameraView.getWidth(), cameraView.getHeight()));
+        resultProcessor = new VisionTextResultProcessor(cameraView);
+        textProcessor.setVisionResultProcessor(resultProcessor);
+    }
 
 }

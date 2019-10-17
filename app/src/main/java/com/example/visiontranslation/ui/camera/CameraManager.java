@@ -1,86 +1,72 @@
 package com.example.visiontranslation.ui.camera;
 
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.util.Log;
+import android.util.SizeF;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TabHost;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.visiontranslation.R;
-import com.example.visiontranslation.vision.VisionFrameProcessor;
+import com.example.visiontranslation.vision.FrameProcessorBridge;
 import com.otaliastudios.cameraview.BitmapCallback;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraOptions;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.PictureResult;
 import com.otaliastudios.cameraview.controls.Flash;
-import com.otaliastudios.cameraview.frame.Frame;
-import com.otaliastudios.cameraview.frame.FrameProcessor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
-public class CameraManager extends CameraListener {
-
+//ToDo: implement auto adapt process frame size mechanism
+public class CameraManager extends CameraListener
+    implements View.OnLayoutChangeListener {
     private final String TAG = "CameraManager";
 
     private CameraView cameraView;
-    private final Map<VisionFrameProcessor<?>, FrameProcessor> frameProcessors = new HashMap<>();
     private boolean isFrozen = false;
     private boolean isStateChanging = false;
     private Bitmap frozenFrame;
     private final Object frozenFrameLock = new Object();
     private ImageView frozenView;
+    private final Set<FrameProcessorBridge> frameProcessorBridges = new HashSet<>();
 
     public CameraManager(CameraView cameraView) {
         Log.d(TAG, "CameraManager Called: " + cameraView);
-
         this.cameraView = cameraView;
         cameraView.addCameraListener(this);
+        cameraView.addOnLayoutChangeListener(this);
         frozenView = cameraView.findViewById(R.id.main_camera_view_water_mark);
     }
 
-    public void addFrameProcessor(@NonNull VisionFrameProcessor<?> frameProcessor) {
-        Log.d(TAG, "addFrameProcessor Called: " + frameProcessor);
+    public void addFrameProcessor(@NonNull FrameProcessorBridge frameProcessorBridge) {
+        Log.d(TAG, "addFrameProcessor Called: " + frameProcessorBridge);
 
-        synchronized (frameProcessors) {
-            this.frameProcessors.put(frameProcessor, new FrameProcessor() {
-                @Override
-                public void process(@NonNull Frame frame) {
-                    frameProcessor.onFrame(
-                            frameProcessor.nv21ToBitmap(
-                                    frame.getData(),
-                                    frame.getSize().getWidth(),
-                                    frame.getSize().getHeight()),
-                            frame.getRotation()
-                    );
-                }
-            });
-            cameraView.addFrameProcessor(frameProcessors.get(frameProcessor));
+        synchronized (frameProcessorBridges) {
+            frameProcessorBridges.add(frameProcessorBridge);
+            cameraView.addFrameProcessor(frameProcessorBridge);
         }
     }
 
-    public void removeFrameProcessor(@NonNull VisionFrameProcessor<?> frameProcessor) {
-        Log.d(TAG, "removeFrameProcessor Called: " + frameProcessor);
+    public void removeFrameProcessor(@NonNull FrameProcessorBridge frameProcessorBridge) {
+        Log.d(TAG, "removeFrameProcessor Called: " + frameProcessorBridge);
 
-        synchronized (frameProcessors) {
-            cameraView.removeFrameProcessor(
-                    this.frameProcessors.remove(frameProcessor)
-            );
+        synchronized (frameProcessorBridges) {
+            frameProcessorBridges.remove(frameProcessorBridge);
+            cameraView.removeFrameProcessor(frameProcessorBridge);
         }
     }
 
     public void clearFrameProcessor() {
         Log.d(TAG, "clearFrameProcessor Called");
 
-        synchronized (frameProcessors) {
+        synchronized (frameProcessorBridges) {
             cameraView.clearFrameProcessors();
-            frameProcessors.clear();
+            frameProcessorBridges.clear();
         }
     }
 
@@ -195,13 +181,19 @@ public class CameraManager extends CameraListener {
         }
     }
 
+    private void onPreviewAspcetRatioChange(SizeF previewAspectRatio) {
+        for(FrameProcessorBridge bridge : frameProcessorBridges) {
+            bridge.setAspectRatio(previewAspectRatio);
+        }
+    }
+
     @Override
     public void onCameraOpened(@NonNull CameraOptions options) {
         super.onCameraOpened(options);
         Log.d(TAG, "onCameraOpened Called: " + options);
 
-        for(VisionFrameProcessor processor : frameProcessors.keySet()) {
-            processor.enableProcessor(true);
+        for(FrameProcessorBridge bridge : frameProcessorBridges) {
+            bridge.getProcessor().enableProcessor(true);
         }
     }
 
@@ -209,8 +201,8 @@ public class CameraManager extends CameraListener {
     public void onCameraClosed() {
         super.onCameraClosed();
         Log.d(TAG, "onCameraClosed Called");
-        for(VisionFrameProcessor processor : frameProcessors.keySet()) {
-            processor.enableProcessor(false);
+        for(FrameProcessorBridge bridge : frameProcessorBridges) {
+            bridge.getProcessor().enableProcessor(false);
         }
     }
 
@@ -227,5 +219,24 @@ public class CameraManager extends CameraListener {
                 }
             });
         }
+    }
+
+    @Override
+    public void onLayoutChange(View v,
+                               int left,
+                               int top,
+                               int right,
+                               int bottom,
+                               int oldLeft,
+                               int oldTop,
+                               int oldRight,
+                               int oldBottom) {
+        Rect rect = new Rect(left, top, right, bottom);
+        Rect old = new Rect(oldLeft, oldTop, oldRight, oldBottom);
+        if(rect.height() != old.height() || rect.width() != old.width()) {
+            SizeF previewAspectRatio = new SizeF(rect.width(), rect.height());
+            onPreviewAspcetRatioChange(previewAspectRatio);
+        }
+
     }
 }

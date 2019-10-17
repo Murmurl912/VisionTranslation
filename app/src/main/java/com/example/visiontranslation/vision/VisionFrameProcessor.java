@@ -15,37 +15,13 @@ import androidx.annotation.Nullable;
 
 public abstract class VisionFrameProcessor<T> {
 
-    private RenderScript rs;
-    private ScriptIntrinsicYuvToRGB scriptIntrinsicYuvToRGB;
-
     private VisionResultProcessor<T> visionResultProcessor;
     private boolean enableProcessor = true;
-    private Bitmap preparedFrame;
+    private Bitmap bitmap;
     private final Object lock = new Object();
-    private Size processSize;
-
-    public VisionFrameProcessor(@NonNull Context context, @NonNull Size processSize) {
-        rs = RenderScript.create(context);
-        scriptIntrinsicYuvToRGB = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
-        this.processSize = processSize;
-    }
-
-    public final synchronized Bitmap nv21ToBitmap(@NonNull byte[] data, int width, int height) {
-        Allocation in, out;
-        Type.Builder yuv, rgba;
-
-        yuv = new Type.Builder(rs, Element.U8(rs)).setX(data.length);
-        in = Allocation.createTyped(rs, yuv.create(), Allocation.USAGE_SCRIPT);
-
-        rgba = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
-        out = Allocation.createTyped(rs, rgba.create(), Allocation.USAGE_SCRIPT);
-
-        in.copyFrom(data);
-        scriptIntrinsicYuvToRGB.setInput(in);
-        scriptIntrinsicYuvToRGB.forEach(out);
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        out.copyTo(bitmap);
-        return bitmap;
+    private Context context;
+    public VisionFrameProcessor(@NonNull Context context) {
+        this.context = context;
     }
 
     public boolean isProcessorEnabled() {
@@ -56,31 +32,25 @@ public abstract class VisionFrameProcessor<T> {
         this.enableProcessor = enable;
     }
 
-    public void setProcessSize(@NonNull Size size) {
-        this.processSize = size;
-    }
-
-    @NonNull
-    public Size getProcessSize() {
-        return processSize;
-    }
-
-    public void onFrame(@NonNull Bitmap frame, int rotation) {
+    public void onFrame(@NonNull Bitmap frame) {
 
         if(!enableProcessor) {
             return;
         }
 
         synchronized (lock) {
-            preparedFrame = onPrepare(frame, rotation);
+            bitmap = frame;
             if(visionResultProcessor != null) {
-                visionResultProcessor.onResult(onProcess(preparedFrame), processSize);
+                visionResultProcessor.onResult(
+                        onProcess(bitmap),
+                        new Size(
+                                bitmap.getWidth(),
+                                bitmap.getHeight()
+                        )
+                );
             }
         }
     }
-
-    @NonNull
-    public abstract Bitmap onPrepare(@NonNull Bitmap bitmap, int rotation);
 
     @NonNull
     public abstract T onProcess(@NonNull Bitmap bitmap);
@@ -88,10 +58,10 @@ public abstract class VisionFrameProcessor<T> {
     public abstract boolean isOperational();
 
     @Nullable
-    protected Bitmap getPreparedFrame() {
+    protected Bitmap getLatestFrame() {
         synchronized (lock) {
-            if(preparedFrame != null && !preparedFrame.isRecycled()) {
-                return preparedFrame.copy(preparedFrame.getConfig(), true);
+            if(bitmap != null && !bitmap.isRecycled()) {
+                return bitmap.copy(bitmap.getConfig(), true);
             } else {
                 return null;
             }

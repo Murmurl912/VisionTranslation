@@ -15,20 +15,14 @@ import com.google.android.gms.vision.text.TextRecognizer;
 public class VisionTextProcessor extends VisionFrameProcessor<SparseArray<TextBlock>> {
     private TextRecognizer recognizer;
 
-    public VisionTextProcessor(@NonNull Context context, @NonNull Size processSize) {
-        super(context, processSize);
+    public VisionTextProcessor(@NonNull Context context) {
+        super(context);
         recognizer = new TextRecognizer.Builder(context).build();
     }
 
     @Override
     public boolean isOperational() {
         return recognizer.isOperational();
-    }
-
-    @NonNull
-    @Override
-    public Bitmap onPrepare(@NonNull Bitmap bitmap, int rotaiton) {
-        return bitmap;
     }
 
     @NonNull
