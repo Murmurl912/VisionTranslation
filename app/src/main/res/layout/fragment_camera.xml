@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="4dp">
-
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -26,13 +25,39 @@
             app:cameraFlash="off"
             app:cameraEngine="camera2"
             app:cameraUseDeviceOrientation="true">
+            <ImageView android:id="@+id/main_camera_view_water_mark"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
         </com.otaliastudios.cameraview.CameraView>
-        <ImageView android:id="@+id/main_camera_view_water_mark"
-            android:visibility="gone"
-            android:clickable="true"
-            android:focusable="true"
+    </androidx.cardview.widget.CardView>
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="4dp"
+        app:cardCornerRadius="8dp">
+        <LinearLayout android:orientation="horizontal"
+            android:layout_gravity="bottom"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"
+            android:background="#50FFFFFF"
+            style="?android:attr/buttonBarStyle">
+            <ImageButton android:id="@+id/main_camera_flash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_flash_off_dark"
+                style="?android:attr/buttonBarButtonStyle"/>
+            <ImageButton android:id="@+id/main_camera_pause_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_pase_circle_dark"
+                style="?android:attr/buttonBarButtonStyle"/>
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -62,10 +87,19 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"/>
+                <ImageButton android:id="@+id/main_camera_clear"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_clear_dark"/>
             </LinearLayout>
 
-            <TextView android:id="@+id/main_camera_source_edit_text"
+            <EditText android:id="@+id/main_camera_source_edit_text"
                 android:background="@android:color/transparent"
+                android:inputType="text"
+                android:lines="2"
+                android:minLines="2"
+                android:maxLines="2"
                 android:gravity="top"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -83,32 +117,4 @@
                 android:src="@drawable/ic_send_dark"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_margin="4dp"
-        app:cardCornerRadius="8dp">
-        <LinearLayout android:orientation="horizontal"
-            android:layout_gravity="bottom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#50FFFFFF"
-            style="?android:attr/buttonBarStyle">
-            <ImageButton android:id="@+id/main_camera_flash"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:src="@drawable/ic_flash_off_dark"
-                style="?android:attr/buttonBarButtonStyle"/>
-            <ImageButton android:id="@+id/main_camera_pause_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:src="@drawable/ic_pase_circle_dark"
-                style="?android:attr/buttonBarButtonStyle"/>
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-
 </LinearLayout>

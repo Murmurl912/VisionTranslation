@@ -39,10 +39,11 @@ public class CameraFragment extends Fragment {
     private int REQUEST_CODE_PERMISSIONS = 101;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA","android.permission.RECORD_AUDIO", "android.permission.WRITE_EXTERNAL_STORAGE"};
 
-    private FragmentCameraManager manager;
     private CameraView cameraView;
     private ImageButton pauseButton;
     private ImageButton flashButton;
+
+    private CameraManager manager;
 
     public CameraFragment() {
         // Required empty public constructor
@@ -64,7 +65,7 @@ public class CameraFragment extends Fragment {
         flashButton = view.findViewById(R.id.main_camera_flash);
 
         cameraView = view.findViewById(R.id.main_camera_view);
-
+        manager = new CameraManager(cameraView);
         pauseButton.setOnClickListener(v->{
             onPauseButtonClicked();
         });
@@ -93,23 +94,13 @@ public class CameraFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_PICK_IMAGE: {
-                if(resultCode == Activity.RESULT_OK) {
-                    onPickImageSuccess(data);
-                } else {
-                    onPickImageFailed(data);
-                }
-            } break;
-            default: {
-
-            }
-        }
+       super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(TAG, "onStart Called");
         if(isAllPermissionGranted()) {
             startCamera();
         } else {
@@ -117,11 +108,34 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause Called");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume Called");
+        manager.openCamera(true);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG,"onStop Called");
+        manager.openCamera(false);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy Called");
+    }
+
     private void startCamera() {
-        cameraView.setLifecycleOwner(this);
         cameraView.setPlaySounds(false);
-        manager = new FragmentCameraManager(cameraView);
-        manager.setDetector(new VisionTextDetector());
     }
 
     private void requestPermission() {
@@ -140,15 +154,6 @@ public class CameraFragment extends Fragment {
         return true;
     }
 
-
-    private void onPickImageSuccess(Intent data) {
-
-    }
-
-    private void onPickImageFailed(Intent data) {
-
-    }
-
     private void onFlashButtonClicked() {
         if(cameraView != null) {
             if(cameraView.getFlash() == Flash.ON || cameraView.getFlash() == Flash.TORCH) {
@@ -163,17 +168,20 @@ public class CameraFragment extends Fragment {
 
     private void onPauseButtonClicked() {
         if(cameraView != null) {
-            if(manager.isChanging()) {
+            if(manager.isCameraPreviewStateChanging()) {
                 return;
             }
-            if(manager.isFrozen()) {
+
+            if(manager.isCameraPreviewFrozen()) {
                 pauseButton.setImageResource(R.drawable.ic_pase_circle_dark);
-                manager.resumeFrame();
+                manager.freezeCameraPreview(false);
             } else {
                 pauseButton.setImageResource(R.drawable.ic_resume_dark);
-                manager.pauseFrame();
+                manager.freezeCameraPreview(true);
             }
         }
     }
+
+
 
 }
