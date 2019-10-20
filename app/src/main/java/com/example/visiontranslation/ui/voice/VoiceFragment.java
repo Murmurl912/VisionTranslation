@@ -189,13 +189,6 @@ public class VoiceFragment extends Fragment {
                 return;
             }
         });
-
-        try {
-            wait();
-        } catch (Exception e) {
-
-        }
-
         //设置语法ID和 SUBJECT 为空，以免因之前有语法调用而设置了此参数；或直接清空所有参数，具体可参考 DEMO 的示例。
         mIat.setParameter( SpeechConstant.CLOUD_GRAMMAR, null );
         mIat.setParameter( SpeechConstant.SUBJECT, null );
