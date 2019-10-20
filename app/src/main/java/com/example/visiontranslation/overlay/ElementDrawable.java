@@ -20,38 +20,39 @@ import com.example.visiontranslation.helper.Helper;
 import com.google.android.gms.vision.text.Element;
 
 public class ElementDrawable extends Drawable {
-    private ColorFilter filter;
-    private int alpha;
     private Element element;
-    private Size frameSize;
-    private Point[] points;
     private Paint paint;
     private int color;
     private boolean isSelected;
-    private Rect rect;
-    private Size canvasSize;
-    private SizeF ratio;
-
-    public ElementDrawable(@NonNull Element element, @NonNull Size frameSize, @NonNull Size viewSize) {
+    private PointF ratio;
+    private PointF[] pointFS;
+    private boolean isInitialize = false;
+    public ElementDrawable(@NonNull Element element, PointF ratio) {
         this.element = element;
-        this.frameSize = frameSize;
-        this.points = element.getCornerPoints();
-        this.rect = element.getBoundingBox();
+        this.ratio = ratio;
         this.paint = new Paint();
         this.isSelected = false;
         this.color = Color.GREEN;
-        this.ratio = new SizeF((float)viewSize.getWidth() / frameSize.getWidth(), (float)viewSize.getHeight() / frameSize.getHeight());
-        this.points = new Point[]{
-                new Point((int)(points[0].x * ratio.getWidth()), (int)(points[0].y * ratio.getHeight())),
-                new Point((int)(points[1].x * ratio.getWidth()), (int)(points[1].y * ratio.getHeight())),
-                new Point((int)(points[2].x * ratio.getWidth()), (int)(points[2].y * ratio.getHeight())),
-                new Point((int)(points[3].x * ratio.getWidth()), (int)(points[3].y * ratio.getHeight()))
-        };
+
     }
 
+    private void initialize() {
+        if(isInitialize) {
+            return;
+        }
 
-    public boolean contain(Point point) {
-        return Helper.isPolygonContainsPoint(points, point);
+        Point[] cornerPoints = element.getCornerPoints();
+        pointFS = new PointF[]{
+                new PointF(cornerPoints[0].x * ratio.x, cornerPoints[0].y * ratio.y),
+                new PointF(cornerPoints[1].x * ratio.x, cornerPoints[1].y * ratio.y),
+                new PointF(cornerPoints[2].x * ratio.x, cornerPoints[2].y * ratio.y),
+                new PointF(cornerPoints[3].x * ratio.x, cornerPoints[3].y * ratio.y),
+        };
+        isInitialize = true;
+    }
+    
+    public boolean contain(PointF point) {
+        return Helper.isPolygonContainsPoint(pointFS, point);
     }
 
     public void setSelected(boolean selected) {
@@ -63,48 +64,66 @@ public class ElementDrawable extends Drawable {
         }
     }
 
+    public String getValue() {
+        return element.getValue();
+    }
+
+    public String getLanguage() {
+        return element.getLanguage();
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setRatio(PointF ratio) {
+        this.ratio = ratio;
+    }
+
+    public PointF getRatio() {
+        return ratio;
+    }
+    
     @Override
     public void draw(@NonNull Canvas canvas) {
-        Rect box = canvas.getClipBounds();
-
-
+        initialize();
         paint.setStrokeWidth(3);
         paint.setColor(color);
         canvas.drawLine(
-                points[0].x,
-                points[0].y,
-                points[1].x,
-                points[1].y,
+                pointFS[0].x,
+                pointFS[0].y,
+                pointFS[1].x,
+                pointFS[1].y,
                 paint);
         canvas.drawLine(
-                points[1].x,
-                points[1].y,
-                points[2].x,
-                points[2].y,
+                pointFS[1].x,
+                pointFS[1].y,
+                pointFS[2].x,
+                pointFS[2].y,
                 paint);
         canvas.drawLine(
-                points[2].x,
-                points[2].y,
-                points[3].x,
-                points[3].y,
+                pointFS[2].x,
+                pointFS[2].y,
+                pointFS[3].x,
+                pointFS[3].y,
                 paint);
         canvas.drawLine(
-                points[3].x,
-                points[3].y,
-                points[0].x,
-                points[0].y,
+                pointFS[3].x,
+                pointFS[3].y,
+                pointFS[0].x,
+                pointFS[0].y,
                 paint);
 
     }
 
     @Override
     public void setAlpha(int alpha) {
-        this.alpha = alpha;
+        paint.setAlpha(alpha);
     }
 
     @Override
     public void setColorFilter(@Nullable ColorFilter colorFilter) {
-        this.filter = colorFilter;
+        paint.setColorFilter(colorFilter);
     }
 
     @Override

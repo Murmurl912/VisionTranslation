@@ -5,12 +5,10 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.util.SizeF;
 import android.view.View;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.visiontranslation.R;
 import com.example.visiontranslation.vision.FrameProcessorBridge;
 import com.otaliastudios.cameraview.BitmapCallback;
 import com.otaliastudios.cameraview.CameraListener;
@@ -32,15 +30,15 @@ public class CameraManager extends CameraListener
     private boolean isStateChanging = false;
     private Bitmap frozenFrame;
     private final Object frozenFrameLock = new Object();
-    private ImageView frozenView;
     private final Set<FrameProcessorBridge> frameProcessorBridges = new HashSet<>();
+
+    private OnCameraPreviewFreezeCallback cameraPausedCallback;
 
     public CameraManager(CameraView cameraView) {
         Log.d(TAG, "CameraManager Called: " + cameraView);
         this.cameraView = cameraView;
         cameraView.addCameraListener(this);
         cameraView.addOnLayoutChangeListener(this);
-        frozenView = cameraView.findViewById(R.id.main_camera_view_water_mark);
     }
 
     public void addFrameProcessor(@NonNull FrameProcessorBridge frameProcessorBridge) {
@@ -68,6 +66,10 @@ public class CameraManager extends CameraListener
             cameraView.clearFrameProcessors();
             frameProcessorBridges.clear();
         }
+    }
+
+    public void setCameraPausedCallback(@NonNull OnCameraPreviewFreezeCallback cameraPausedCallback) {
+        this.cameraPausedCallback = cameraPausedCallback;
     }
 
     public void freezeCameraPreview(boolean freeze) {
@@ -105,9 +107,14 @@ public class CameraManager extends CameraListener
         }
         isStateChanging = true;
         cameraView.post(()->cameraView.open());
-        frozenView.post(()->frozenView.setVisibility(View.GONE));
         isFrozen = false;
         isStateChanging = false;
+
+        new Thread(()->{
+            if(cameraPausedCallback != null) {
+                cameraPausedCallback.onPreviewResume();
+            }
+        }).start();
     }
 
     private void onSnapShotTakenCallback(@Nullable Bitmap bitmap) {
@@ -121,11 +128,14 @@ public class CameraManager extends CameraListener
 
         setFrozenFrame(bitmap);
         cameraView.post(()->cameraView.close());
-        frozenView.post(()->frozenView.setVisibility(View.VISIBLE));
-        frozenView.post(()->frozenView.setImageBitmap(bitmap));
-
         isFrozen = true;
         isStateChanging = false;
+
+        new Thread(()->{
+            if(cameraPausedCallback != null) {
+                cameraPausedCallback.onPreviewPaused(bitmap);
+            }
+        }).start();
     }
 
     public boolean isCameraPreviewStateChanging() {
@@ -237,6 +247,11 @@ public class CameraManager extends CameraListener
             SizeF previewAspectRatio = new SizeF(rect.width(), rect.height());
             onPreviewAspcetRatioChange(previewAspectRatio);
         }
+    }
 
+    public interface OnCameraPreviewFreezeCallback {
+        public void onPreviewPaused(Bitmap frame);
+
+        public void onPreviewResume();
     }
 }

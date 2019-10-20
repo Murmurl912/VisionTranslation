@@ -3,6 +3,7 @@ package com.example.visiontranslation.helper;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.View;
@@ -152,11 +153,11 @@ public class Helper {
         thread.start();
     }
 
-    public static boolean isPolygonContainsPoint(Point[] mPoints, Point point) {
+    public static boolean isPolygonContainsPoint(PointF[] mPoints, PointF point) {
         int nCross = 0;
         for (int i = 0; i < mPoints.length; i++) {
-            Point p1 = mPoints[i];
-            Point p2 = mPoints[(i + 1) % mPoints.length];
+            PointF p1 = mPoints[i];
+            PointF p2 = mPoints[(i + 1) % mPoints.length];
             // 取多边形任意一个边,做点point的水平延长线,求解与当前边的交点个数
             // p1p2是水平线段,要么没有交点,要么有无限个交点
             if (p1.y == p2.y)

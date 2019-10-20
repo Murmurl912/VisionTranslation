@@ -18,12 +18,20 @@
         <action
             android:id="@+id/action_textFragment_to_voiceFragment"
             app:destination="@id/voiceFragment" />
+        <argument
+            android:name="TRANSLATION_REQUEST"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"
         android:name="com.example.visiontranslation.ui.camera.CameraFragment"
         android:label="fragment_camera"
-        tools:layout="@layout/fragment_camera" />
+        tools:layout="@layout/fragment_camera" >
+        <action
+            android:id="@+id/action_cameraFragment_to_textFragment"
+            app:destination="@id/textFragment" />
+    </fragment>
     <fragment
         android:id="@+id/voiceFragment"
         android:name="com.example.visiontranslation.ui.voice.VoiceFragment"

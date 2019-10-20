@@ -1,40 +1,43 @@
 package com.example.visiontranslation.ui.camera;
 
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.util.Log;
 import android.util.SizeF;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.visiontranslation.R;
-import com.example.visiontranslation.detector.text.VisionTextDetector;
+import com.example.visiontranslation.ui.MainActivity;
+import com.example.visiontranslation.vision.VisionResultProcessor;
 import com.example.visiontranslation.vision.text.VisionTextProcessor;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.controls.Flash;
-
-import org.opencv.android.OpenCVLoader;
 
 import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CameraFragment extends Fragment {
+public class CameraFragment extends Fragment
+        implements CameraManager.OnCameraPreviewFreezeCallback,
+        PausedFrameVisionTextResultProcessor.TextSelectionListener,
+        VisionTextResultProcessor.TextRecognitionListener {
 
     public final String TAG = "CameraFragment";
     public final int REQUEST_CODE_PICK_IMAGE = 1;
@@ -46,12 +49,20 @@ public class CameraFragment extends Fragment {
     private ImageButton pauseButton;
     private ImageButton flashButton;
     private ImageView waterMark;
+    private EditText editText;
+    private ImageButton clearButton;
+    private ImageButton speakButton;
+    private ImageButton translateButton;
 
     private CameraManager manager;
 
     private VisionTextProcessor textProcessor;
     private VisionTextProcessorBridge textProcessorBridge;
     private VisionTextResultProcessor resultProcessor;
+
+    private VisionTextProcessor singleFrameProcessor;
+    private VisionResultProcessor singleFrameResultProcessor;
+
 
     public CameraFragment() {
         // Required empty public constructor
@@ -69,27 +80,9 @@ public class CameraFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated() called");
-        pauseButton = view.findViewById(R.id.main_camera_pause_button);
-        flashButton = view.findViewById(R.id.main_camera_flash);
-
-        cameraView = view.findViewById(R.id.main_camera_view);
-        waterMark = view.findViewById(R.id.main_camera_view_water_mark);
-        manager = new CameraManager(cameraView);
-        pauseButton.setOnClickListener(v->{
-            onPauseButtonClicked();
-        });
-        flashButton.setOnClickListener(v->{
-            onFlashButtonClicked();
-        });
+        bindView(view);
         addFrameProcessor();
     }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.d(TAG, "onDestoryView() called");
-    }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -129,7 +122,9 @@ public class CameraFragment extends Fragment {
         super.onResume();
         Log.d(TAG, "onResume Called");
         manager.openCamera(true);
-        manager.addFrameProcessor(textProcessorBridge);
+        if(textProcessorBridge != null) {
+            manager.addFrameProcessor(textProcessorBridge);
+        };
 
     }
 
@@ -138,13 +133,81 @@ public class CameraFragment extends Fragment {
         super.onStop();
         Log.d(TAG,"onStop Called");
         manager.openCamera(false);
-        manager.removeFrameProcessor(textProcessorBridge);
+        if(textProcessorBridge != null) {
+            manager.removeFrameProcessor(textProcessorBridge);
+        };
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy Called");
+    }
+
+
+    @Override
+    public void onPreviewPaused(Bitmap frame) {
+        waterMark.post(()->waterMark.setVisibility(View.VISIBLE));
+        waterMark.post(()->waterMark.setImageBitmap(frame));
+        editText.post(()->editText.setText(""));
+        processPausedFrame(frame);
+    }
+
+    @Override
+    public void onPreviewResume() {
+        waterMark.post(()->waterMark.setVisibility(View.GONE));
+        editText.post(()->editText.setText(""));
+    }
+
+    private void bindView(View view) {
+        pauseButton = view.findViewById(R.id.main_camera_pause_button);
+        flashButton = view.findViewById(R.id.main_camera_flash);
+
+        cameraView = view.findViewById(R.id.main_camera_view);
+        waterMark = view.findViewById(R.id.main_camera_view_water_mark);
+        manager = new CameraManager(cameraView);
+        pauseButton.setOnClickListener(v->{
+            onPauseButtonClicked();
+        });
+        flashButton.setOnClickListener(v->{
+            onFlashButtonClicked();
+        });
+        editText = view.findViewById(R.id.main_camera_source_edit_text);
+        translateButton = view.findViewById(R.id.main_camera_translate_button);
+        clearButton = view.findViewById(R.id.main_camera_clear);
+        clearButton.setOnClickListener(v->{
+            editText.setText("");
+            ((PausedFrameVisionTextResultProcessor)singleFrameResultProcessor).clearSelection();
+        });
+
+        speakButton = view.findViewById(R.id.main_camera_speak_source_button);
+        translateButton.setOnClickListener(v->{
+            Bundle bundle = new Bundle();
+            bundle.putString("REQUEST TRANSLATION", editText.getText().toString());
+            Navigation.findNavController(translateButton).navigate(R.id.action_cameraFragment_to_textFragment, bundle);
+
+        });
+
+        speakButton.setOnClickListener(v->{
+            speak(editText.getText().toString());
+
+        });
+    }
+
+    @Override
+    public void onSelectionChanged(String text) {
+        editText.post(()->editText.setText(text));
+    }
+
+    @Override
+    public void onText(String text) {
+        if(textProcessor.isProcessorEnabled()) {
+            editText.post(()->editText.setText(text));
+        }
+    }
+
+    private void processPausedFrame(Bitmap bitmap) {
+        singleFrameProcessor.onFrame(bitmap);
     }
 
     private void startCamera() {
@@ -182,6 +245,7 @@ public class CameraFragment extends Fragment {
 
     private void onPauseButtonClicked() {
         if(cameraView != null) {
+            editText.setText("");
             if(manager.isCameraPreviewStateChanging()) {
                 return;
             }
@@ -199,8 +263,20 @@ public class CameraFragment extends Fragment {
     private void addFrameProcessor() {
         textProcessor = new VisionTextProcessor(getContext());
         textProcessorBridge = new VisionTextProcessorBridge(textProcessor, new SizeF(cameraView.getWidth(), cameraView.getHeight()));
-        resultProcessor = new VisionTextResultProcessor(cameraView);
+        resultProcessor = new VisionTextResultProcessor(cameraView, (MainActivity)getActivity());
+        resultProcessor.setTextRecognitionListener(this);
         textProcessor.setVisionResultProcessor(resultProcessor);
+        manager.addFrameProcessor(textProcessorBridge);
+
+        singleFrameProcessor = new VisionTextProcessor(getContext());
+        singleFrameResultProcessor = new PausedFrameVisionTextResultProcessor(waterMark);
+        ((PausedFrameVisionTextResultProcessor)singleFrameResultProcessor).setTextSelectionListener(this);
+        singleFrameProcessor.setVisionResultProcessor(singleFrameResultProcessor);
+        manager.setCameraPausedCallback(this);
+    }
+
+    private void speak(String value) {
+
     }
 
 }

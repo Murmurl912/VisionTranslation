@@ -161,6 +161,7 @@ public class TranslationCache {
         private String result;
 
         private Entry(long id, String from, String to, String query, String result) {
+            this.id = id;
             this.from = from;
             this.to = to;
             this.query = query;

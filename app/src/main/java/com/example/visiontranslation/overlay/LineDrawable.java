@@ -32,7 +32,7 @@ public class LineDrawable extends Drawable {
     private String translated;
     private float textHeight;
 
-    public LineDrawable(@NonNull Line line, @NonNull Size frameSize, @Nullable String translated) {
+    public LineDrawable(@NonNull Line line, @NonNull Size frameSize, String targetLanguage) {
         this.line = line;
         this.frameSize = frameSize;
         this.lineBox = line.getBoundingBox();
@@ -45,6 +45,23 @@ public class LineDrawable extends Drawable {
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         textHeight = 0;
+
+        /*
+            BaiduTranslationService.getBaiduTranslationService().request(
+                    BaiduTranslationService.AUTO,
+                    BaiduTranslationService.getCode(targetLanguage),
+                    value,
+                    new BaiduTranslationService.Response() {
+                        @Override
+                        public void response(String s, int status) {
+                            if(translated != null) {
+                                translated = s;
+                            }
+                        }
+                    }
+            );
+
+         */
     }
 
     @Override
@@ -88,7 +105,7 @@ public class LineDrawable extends Drawable {
          */
 
 
-        if(translated != null) {
+        if(translated != null && !translated.equals("")) {
             Rect rect = new Rect();
             paint.getTextBounds(translated, 0, translated.length(), rect);
             paint.setColor(Color.parseColor("#80000000"));
@@ -108,7 +125,7 @@ public class LineDrawable extends Drawable {
         } else {
             Rect rect = new Rect();
             paint.getTextBounds(value, 0, value.length(), rect);
-            paint.setColor(Color.parseColor("#ff000000"));
+            paint.setColor(Color.parseColor("#80000000"));
             rect.offsetTo(
                     (int)(points[0].x * ratio.getWidth()),
                     (int)(points[0].y * ratio.getHeight())

@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.overlay.GraphicsOverlay;
 import com.example.visiontranslation.overlay.LineDrawable;
+import com.example.visiontranslation.ui.MainActivity;
 import com.example.visiontranslation.vision.VisionResultProcessor;
 import com.google.android.gms.vision.L;
 import com.google.android.gms.vision.text.Element;
@@ -30,30 +31,54 @@ public class VisionTextResultProcessor implements
 
     private GraphicsOverlay overlay;
     private List<Drawable> drawables;
-    private List<Line> lines;
+    private MainActivity activity;
+    private TextRecognitionListener listener;
 
-    public VisionTextResultProcessor(View view) {
+    public VisionTextResultProcessor(View view, MainActivity activity) {
         drawables = new ArrayList<>();
         overlay = new GraphicsOverlay(view);
+        this.activity = activity;
     }
 
     @Override
     public void onResult(@NonNull SparseArray<TextBlock> result, @NonNull Size processSize) {
         overlay.remove(drawables);
         drawables.clear();
+        StringBuilder builder = new StringBuilder();
+
         for(int i = 0; i < result.size(); i++) {
             TextBlock block = result.get(i);
+            if(block.getLanguage().equals("und")) {
+                break;
+            }
+
             for(Text textLine : block.getComponents()) {
-                LineDrawable drawable = new LineDrawable((Line)textLine, processSize, "");
+
+                builder.append(textLine.getValue());
+                builder.append("\n");
+                LineDrawable drawable = new LineDrawable((Line)textLine, processSize, activity.getTargetLanguage());
                 drawables.add(drawable);
             }
+            builder.append("\n");
         }
-        overlay.add(drawables);
 
+        final String value = builder.toString();
+        overlay.add(drawables);
+        if(listener != null) {
+            listener.onText(value);
+        }
+    }
+
+    public void setTextRecognitionListener(TextRecognitionListener listener) {
+        this.listener = listener;
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         return false;
+    }
+
+    public interface TextRecognitionListener {
+        public void onText(String text);
     }
 }

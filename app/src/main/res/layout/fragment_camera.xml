@@ -25,13 +25,13 @@
             app:cameraFlash="off"
             app:cameraEngine="camera2"
             app:cameraUseDeviceOrientation="true">
-            <ImageView android:id="@+id/main_camera_view_water_mark"
-                android:visibility="gone"
-                android:clickable="true"
-                android:focusable="true"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
         </com.otaliastudios.cameraview.CameraView>
+        <ImageView android:id="@+id/main_camera_view_water_mark"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -70,8 +70,6 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-
             <LinearLayout
                 android:minHeight="0dp"
                 android:orientation="horizontal"
@@ -95,8 +93,8 @@
             </LinearLayout>
 
             <EditText android:id="@+id/main_camera_source_edit_text"
+                android:editable="false"
                 android:background="@android:color/transparent"
-                android:inputType="text"
                 android:lines="2"
                 android:minLines="2"
                 android:maxLines="2"

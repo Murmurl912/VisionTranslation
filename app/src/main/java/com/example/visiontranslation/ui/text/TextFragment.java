@@ -50,6 +50,8 @@ public class TextFragment extends Fragment {
     private FloatingActionButton lens;
     private boolean isRotated = false;
 
+    private EditText source;
+    private TextView target;
     public TextFragment() {
         // Required empty public constructor
         Log.d(TAG, "TextFragment() called");
@@ -131,8 +133,8 @@ public class TextFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated() called");
 
-        EditText source  = view.findViewById(R.id.main_text_source_edit_text);
-        TextView target = view.findViewById(R.id.main_text_target_text);
+        source  = view.findViewById(R.id.main_text_source_edit_text);
+        target = view.findViewById(R.id.main_text_target_text);
 
         view.findViewById(R.id.main_text_speak_source_button).setOnClickListener(v->{
            speak(
@@ -184,6 +186,18 @@ public class TextFragment extends Fragment {
 
         initializeActionButton(view);
 
+        initial(view);
+    }
+
+    private void initial(View view) {
+        Bundle bundle = getArguments();
+        if(bundle != null) {
+            String value = bundle.getString("REQUEST TRANSLATION");
+            if(value != null) {
+                source.setText(value);
+                view.findViewById(R.id.main_text_translate_button).performClick();
+            }
+        }
     }
 
     private void speak(@NonNull String text, Locale locale) {
