@@ -15,16 +15,13 @@ import com.example.visiontranslation.overlay.GraphicsOverlay;
 import com.example.visiontranslation.overlay.LineDrawable;
 import com.example.visiontranslation.ui.MainActivity;
 import com.example.visiontranslation.vision.VisionResultProcessor;
-import com.google.android.gms.vision.L;
-import com.google.android.gms.vision.text.Element;
 import com.google.android.gms.vision.text.Line;
 import com.google.android.gms.vision.text.Text;
 import com.google.android.gms.vision.text.TextBlock;
-import com.otaliastudios.cameraview.CameraView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
 
 public class VisionTextResultProcessor implements
         VisionResultProcessor<SparseArray<TextBlock>>, View.OnTouchListener {
