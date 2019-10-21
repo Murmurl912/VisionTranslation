@@ -62,13 +62,6 @@ public class ImageFragment extends Fragment {
     }
 
     private void init() {
-        SpeechRecognizer.createRecognizer(getContext(), new InitListener() {
-            @Override
-            public void onInit(int i) {
-                Log.d("Speech", "onInit: " + i);
-                SpeechRecognizer recognizer = SpeechRecognizer.getRecognizer();
-            }
-        });
 
         Helper.loadOpenCV(new LoaderCallbackInterface() {
             @Override
