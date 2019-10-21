@@ -1,6 +1,8 @@
 package com.example.visiontranslation.ui.text;
 
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -8,29 +10,30 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeechService;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.textclassifier.TextClassification;
-import android.view.textclassifier.TextClassifier;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.visiontranslation.R;
+import com.example.visiontranslation.VisionTranslationApplication;
 import com.example.visiontranslation.animation.FloatingActionButtonAnimation;
+import com.example.visiontranslation.database.DatabaseManager;
+import com.example.visiontranslation.database.TextTranslationHistory;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
 import com.example.visiontranslation.ui.MainActivity;
-import com.google.android.gms.vision.L;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import static com.example.visiontranslation.translation.BaiduTranslationService.STATUS_OK;
 
@@ -52,6 +55,14 @@ public class TextFragment extends Fragment {
 
     private EditText source;
     private TextView target;
+    private ImageButton speakSourceButton;
+    private ImageButton speakTargetButton;
+    private ImageButton translateButton;
+
+    private TextTranslationHistoryAdapter adapter;
+    private RecyclerView recyclerView;
+    private boolean isFav = false;
+
     public TextFragment() {
         // Required empty public constructor
         Log.d(TAG, "TextFragment() called");
@@ -61,62 +72,6 @@ public class TextFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() called");
-
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart() called");
-
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume() called");
-
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop() called");
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause() called");
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestory() called");
-
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        Log.d(TAG, "onAttach() called");
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        Log.d(TAG, "onDetach() called");
-
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated() called");
 
     }
 
@@ -136,21 +91,24 @@ public class TextFragment extends Fragment {
         source  = view.findViewById(R.id.main_text_source_edit_text);
         target = view.findViewById(R.id.main_text_target_text);
 
-        view.findViewById(R.id.main_text_speak_source_button).setOnClickListener(v->{
+        speakSourceButton = view.findViewById(R.id.main_text_speak_source_button);
+        speakSourceButton.setOnClickListener(v->{
            speak(
                    source.getText().toString(),
                    Helper.getLocaleByLanguage(((MainActivity)getActivity()).getSourceLanguage())
                    );
         });
 
-        view.findViewById(R.id.main_text_speak_target_button).setOnClickListener(v->{
+        speakTargetButton = view.findViewById(R.id.main_text_speak_target_button);
+        speakTargetButton.setOnClickListener(v->{
             speak(
                     target.getText().toString(),
                     Helper.getLocaleByLanguage(((MainActivity)getActivity()).getTargetLanguage())
             );
         });
 
-        view.findViewById(R.id.main_text_translate_button).setOnClickListener(v->{
+        translateButton = view.findViewById(R.id.main_text_translate_button);
+        translateButton.setOnClickListener(v->{
             Helper.hideSoftKeyboard(getActivity());
             String text = source.getText().toString();
             BaiduTranslationService.getBaiduTranslationService().request(
@@ -164,6 +122,7 @@ public class TextFragment extends Fragment {
                         public void response(String s, int status) {
                             if(status == STATUS_OK) {
                                 target.setText(s);
+                                recordHistoryToDatabase(s);
                             } else {
                                 view.post(()->{
                                     Toast.makeText(getContext(), "Translation Services Unavailable", Toast.LENGTH_SHORT).show();
@@ -184,9 +143,62 @@ public class TextFragment extends Fragment {
 
         });
 
+        recyclerView = view.findViewById(R.id.main_text_recycler_view);
+        adapter = new TextTranslationHistoryAdapter(getContext(), getActivity());
+        recyclerView.setAdapter(adapter);
+
+        view.findViewById(R.id.main_text_copy_translation).setOnClickListener(v->{
+            ClipboardManager cm = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData mClipData = ClipData.newPlainText("copy", target.getText());
+            Objects.requireNonNull(cm).setPrimaryClip(mClipData);
+            Toast.makeText(getContext(), "Copied!", Toast.LENGTH_SHORT).show();
+        });
+
+        view.findViewById(R.id.main_text_favorite).setOnClickListener(v->{
+            if(isFav) {
+                isFav = false;
+                ((ImageButton)v).post(()->((ImageButton) v).setImageResource(R.drawable.ic_star_border_dark));
+            } else {
+                isFav = true;
+                ((ImageButton)v).post(()->((ImageButton) v).setImageResource(R.drawable.ic_star_dark));
+            }
+        });
+
         initializeActionButton(view);
 
         initial(view);
+        loadHistory();
+    }
+
+    private void loadHistory() {
+        new Thread(()->{
+            DatabaseManager.getTextTranslationHistory()
+                    .requestLoadHistoryRecord(null, (status, data)->{
+                        adapter.setHistories(data);
+                    });
+        }).start();
+    }
+
+
+    private void recordHistoryToDatabase(String target) {
+        TextTranslationHistory textTranslationHistory = DatabaseManager.getTextTranslationHistory();
+        TextTranslationHistory.TranslationHistory history =
+                new TextTranslationHistory.TranslationHistory(
+                        System.currentTimeMillis(),
+                        false,
+                        source.getText().toString(),
+                        target,
+                        ((MainActivity)getActivity()).getSourceLanguage(),
+                        ((MainActivity)getActivity()).getTargetLanguage()
+                );
+        if(textTranslationHistory.contain(history)) {
+            textTranslationHistory.update(history);
+            int index = adapter.find(history);
+            adapter.remove(index);
+        } else {
+            textTranslationHistory.add(history);
+        }
+        adapter.add(0, history);
     }
 
     private void initial(View view) {
@@ -197,6 +209,9 @@ public class TextFragment extends Fragment {
                 source.setText(value);
                 view.findViewById(R.id.main_text_translate_button).performClick();
             }
+        }
+        if(isFav) {
+            view.findViewById(R.id.main_text_favorite).performClick();
         }
     }
 
@@ -274,7 +289,7 @@ public class TextFragment extends Fragment {
 
         gallary.setOnClickListener(v->{
             home.performClick();
-            Navigation.findNavController(gallary).navigate(R.id.action_textFragment_to_cameraFragment);
+            Navigation.findNavController(gallary).navigate(R.id.action_textFragment_to_imageFragment);
 
         });
 
@@ -285,10 +300,6 @@ public class TextFragment extends Fragment {
         });
     }
 
-
-    private void clearText() {
-
-    }
 
     @Override
     public void onDestroyView() {

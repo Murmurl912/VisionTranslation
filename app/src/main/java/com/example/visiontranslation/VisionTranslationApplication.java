@@ -2,6 +2,8 @@ package com.example.visiontranslation;
 
 import android.app.Application;
 
+import com.example.visiontranslation.database.DatabaseManager;
+
 public class VisionTranslationApplication extends Application {
 
     private static VisionTranslationApplication application;
@@ -21,5 +23,11 @@ public class VisionTranslationApplication extends Application {
 
     public static VisionTranslationApplication getVisionTranslationApplication() {
         return application;
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        DatabaseManager.close();
     }
 }

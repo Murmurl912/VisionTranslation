@@ -45,7 +45,7 @@ public class TranslationCache {
         }
     }
 
-    private void closeDatabase() {
+    public void close() {
         database.close();
     }
 

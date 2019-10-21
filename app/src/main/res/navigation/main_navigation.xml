@@ -22,6 +22,9 @@
             android:name="TRANSLATION_REQUEST"
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_textFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"
@@ -37,4 +40,9 @@
         android:name="com.example.visiontranslation.ui.voice.VoiceFragment"
         android:label="fragment_voice"
         tools:layout="@layout/fragment_voice" />
+    <fragment
+        android:id="@+id/imageFragment"
+        android:name="com.example.visiontranslation.ui.image.ImageFragment"
+        android:label="fragment_image"
+        tools:layout="@layout/fragment_image" />
 </navigation>

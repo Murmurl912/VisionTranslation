@@ -46,22 +46,20 @@ public class LineDrawable extends Drawable {
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         textHeight = 0;
 
-        /*
-            BaiduTranslationService.getBaiduTranslationService().request(
-                    BaiduTranslationService.AUTO,
-                    BaiduTranslationService.getCode(targetLanguage),
-                    value,
-                    new BaiduTranslationService.Response() {
-                        @Override
-                        public void response(String s, int status) {
-                            if(translated != null) {
-                                translated = s;
-                            }
+        translated = "";
+        BaiduTranslationService.getBaiduTranslationService().request(
+                BaiduTranslationService.AUTO,
+                BaiduTranslationService.getCode(targetLanguage),
+                value,
+                new BaiduTranslationService.Response() {
+                    @Override
+                    public void response(String s, int status) {
+                        if(translated != null) {
+                            translated = s;
                         }
                     }
-            );
-
-         */
+                }
+        );
     }
 
     @Override
