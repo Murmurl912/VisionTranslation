@@ -149,7 +149,7 @@ public class TranslationCache {
         if(!database.isOpen()) {
             createOrOpenDatabase();
         }
-        database.execSQL("delete from TransaltionCache");
+        database.execSQL("delete from TranslationCache where 1 = 1");
         maps.clear();
     }
 

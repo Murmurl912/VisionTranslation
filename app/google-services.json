@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "633496715351",
+    "firebase_url": "https://projectvisiontranslation.firebaseio.com",
+    "project_id": "projectvisiontranslation",
+    "storage_bucket": "projectvisiontranslation.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:633496715351:android:d80ca607434a6ad9bc6312",
+        "android_client_info": {
+          "package_name": "com.example.camerax"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "633496715351-i1d28s1becfquprvnfou2gpb1h59t2ph.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUD8TMf4j-At2BCPuTLY_tgrv4lh63t7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "633496715351-i1d28s1becfquprvnfou2gpb1h59t2ph.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:633496715351:android:9e8c6ed81a647a2cbc6312",
+        "android_client_info": {
+          "package_name": "com.example.visiontranslation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "633496715351-i1d28s1becfquprvnfou2gpb1h59t2ph.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUD8TMf4j-At2BCPuTLY_tgrv4lh63t7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "633496715351-i1d28s1becfquprvnfou2gpb1h59t2ph.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

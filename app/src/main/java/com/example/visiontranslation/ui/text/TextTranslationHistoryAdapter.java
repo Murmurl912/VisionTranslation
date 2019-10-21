@@ -139,11 +139,15 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
     }
 
     public TextTranslationHistory.TranslationHistory remove(int index) {
-        TextTranslationHistory.TranslationHistory history = histories.remove(index);
-        activity.runOnUiThread(()->{
-            notifyItemRemoved(index);
-        });
-        return history;
+        try {
+            TextTranslationHistory.TranslationHistory history = histories.remove(index);
+            activity.runOnUiThread(()->{
+                notifyItemRemoved(index);
+            });
+            return history;
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     public void update(int index, TextTranslationHistory.TranslationHistory history) {

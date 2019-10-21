@@ -11,6 +11,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -69,4 +70,12 @@ dependencies {
     implementation "android.arch.navigation:navigation-ui:$nav_version"
     implementation files('libs/Msc.jar')
     implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude: [])
+
+
+    implementation 'com.google.firebase:firebase-ml-natural-language:22.0.0'
+    implementation 'com.google.firebase:firebase-core:17.2.0'
+    implementation 'com.google.firebase:firebase-ml-vision:24.0.0'
+    implementation 'com.google.firebase:firebase-ml-natural-language-translate-model:20.0.7'
 }
+
+apply plugin: 'com.google.gms.google-services'

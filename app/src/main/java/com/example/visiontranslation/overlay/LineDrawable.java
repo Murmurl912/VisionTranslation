@@ -47,6 +47,7 @@ public class LineDrawable extends Drawable {
         textHeight = 0;
 
         translated = "";
+        /*
         BaiduTranslationService.getBaiduTranslationService().request(
                 BaiduTranslationService.AUTO,
                 BaiduTranslationService.getCode(targetLanguage),
@@ -60,6 +61,7 @@ public class LineDrawable extends Drawable {
                     }
                 }
         );
+        */
     }
 
     @Override

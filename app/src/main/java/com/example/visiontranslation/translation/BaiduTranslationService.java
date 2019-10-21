@@ -22,7 +22,7 @@ public class BaiduTranslationService {
     private String to = "zh";
     private TransApi api = new TransApi(APP_ID ,SECURITY_KEY );
     private Gson gson = new Gson();
-    private String s;
+    private String s = "";
     public static final  int STATUS_OK = 1;
     public static final  int STATUS_ERROR = 0;
     private static BaiduTranslationService service;
@@ -98,7 +98,7 @@ public class BaiduTranslationService {
         } else{
             translation = entry.getResult();
         }
-
+        DatabaseManager.getTranslationCache().clearCache();
         return translation;
     }
 
@@ -106,13 +106,34 @@ public class BaiduTranslationService {
 
         Runnable run = new Runnable () {
             public void run() {
+                String tempstr = "";
                 int status = 1;
                 try{
-                    s = transResult(from, to,query);
+                    for(int i=0; i<query.length(); i++)
+                    {
+                        if(query.charAt(i) == '\n'){
+                            if(tempstr != "") {
+                                s = s + transResult(from, to, tempstr) + "\n";
+                                tempstr = "";
+                            }
+                            else
+                                s = s + "\n";
+                            continue;
+                        }
+                        tempstr = tempstr + query.charAt(i);
+                        if(i == query.length() - 1){
+                            if(tempstr != "")
+                                s = s + transResult(from, to, tempstr);
+                            else
+                                s = s + "\n";
+                        }
+                    }
+
                 }catch(Exception e)	{
                     status = 0;
                 } finally {
                     rep.response(s, status);
+                    s = "";
                 }
             }
         };

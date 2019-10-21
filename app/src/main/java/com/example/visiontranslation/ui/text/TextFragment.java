@@ -110,6 +110,11 @@ public class TextFragment extends Fragment {
         translateButton.setOnClickListener(v->{
             Helper.hideSoftKeyboard(getActivity());
             String text = source.getText().toString();
+            if(text.equals("")) {
+                Toast.makeText(getContext(), "Input is empty!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             BaiduTranslationService.getBaiduTranslationService().request(
                     BaiduTranslationService.getCode(((MainActivity) getActivity()).getSourceLanguage())
                     ,
@@ -120,8 +125,11 @@ public class TextFragment extends Fragment {
                         @Override
                         public void response(String s, int status) {
                             if(status == STATUS_OK) {
-                                target.setText(s);
-                                recordHistoryToDatabase(s);
+                                target.post(()->target.setText(s));
+                                recordHistoryToDatabase(text, s);
+                                view.post(()->{
+                                    Toast.makeText(getContext(), "Translation Services Success", Toast.LENGTH_SHORT).show();
+                                });
                             } else {
                                 view.post(()->{
                                     Toast.makeText(getContext(), "Translation Services Unavailable", Toast.LENGTH_SHORT).show();
@@ -169,13 +177,17 @@ public class TextFragment extends Fragment {
     }
 
 
-    private void recordHistoryToDatabase(String target) {
+    private void recordHistoryToDatabase(String source, String target) {
+        if(true) {
+            return;
+        }
+
         TextTranslationHistory textTranslationHistory = DatabaseManager.getTextTranslationHistory();
         TextTranslationHistory.TranslationHistory history =
                 new TextTranslationHistory.TranslationHistory(
                         System.currentTimeMillis(),
                         false,
-                        source.getText().toString(),
+                        source,
                         target,
                         ((MainActivity)getActivity()).getSourceLanguage(),
                         ((MainActivity)getActivity()).getTargetLanguage()
