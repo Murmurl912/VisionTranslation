@@ -61,7 +61,6 @@ public class TextFragment extends Fragment {
 
     private TextTranslationHistoryAdapter adapter;
     private RecyclerView recyclerView;
-    private boolean isFav = false;
 
     public TextFragment() {
         // Required empty public constructor
@@ -154,16 +153,6 @@ public class TextFragment extends Fragment {
             Toast.makeText(getContext(), "Copied!", Toast.LENGTH_SHORT).show();
         });
 
-        view.findViewById(R.id.main_text_favorite).setOnClickListener(v->{
-            if(isFav) {
-                isFav = false;
-                ((ImageButton)v).post(()->((ImageButton) v).setImageResource(R.drawable.ic_star_border_dark));
-            } else {
-                isFav = true;
-                ((ImageButton)v).post(()->((ImageButton) v).setImageResource(R.drawable.ic_star_dark));
-            }
-        });
-
         initializeActionButton(view);
 
         initial(view);
@@ -209,9 +198,6 @@ public class TextFragment extends Fragment {
                 source.setText(value);
                 view.findViewById(R.id.main_text_translate_button).performClick();
             }
-        }
-        if(isFav) {
-            view.findViewById(R.id.main_text_favorite).performClick();
         }
     }
 

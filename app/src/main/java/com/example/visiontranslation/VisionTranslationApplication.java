@@ -28,6 +28,5 @@ public class VisionTranslationApplication extends Application {
     @Override
     public void onTerminate() {
         super.onTerminate();
-        DatabaseManager.close();
     }
 }

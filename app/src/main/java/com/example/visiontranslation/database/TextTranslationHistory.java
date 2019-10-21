@@ -12,7 +12,7 @@ import java.util.List;
 public class TextTranslationHistory {
     private Context context;
     private SQLiteDatabase database;
-    private final String dbname = "history_database";
+    private final String dbname = "HistoryDatabase";
     private List<TranslationHistory> histories;
 
     public TextTranslationHistory(Context context) {
@@ -22,7 +22,7 @@ public class TextTranslationHistory {
     }
 
     private void openOrCreateDatabase() {
-        database = context.openOrCreateDatabase("history_database", Context.MODE_PRIVATE, null);
+        database = context.openOrCreateDatabase(dbname, Context.MODE_PRIVATE, null);
         if(database.getVersion() == 0) {
             database.execSQL("create table History (" +
                     "source text, " +
@@ -80,6 +80,7 @@ public class TextTranslationHistory {
         if(contain(history)) {
             return;
         }
+
         database.execSQL("insert into History values("
                 + "'" + escapeSingleQuote(history.getSource()) + "', "
                 + "'" + escapeSingleQuote(history.getTarget()) + "', "
@@ -102,8 +103,8 @@ public class TextTranslationHistory {
         if(contain(history)) {
             database.execSQL("delete from History where source = '"
                     + escapeSingleQuote(history.getSource())
-                    + "' and source_lg = '" +
-                    escapeSingleQuote(history.getTarget_lg() +"'"));
+                    + "' and target_lg = '" +
+                    escapeSingleQuote(history.getTarget_lg()) + "'");
         }
         histories.remove(history);
     }

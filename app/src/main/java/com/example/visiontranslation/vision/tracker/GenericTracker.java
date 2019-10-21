@@ -1,4 +1,4 @@
-package com.example.visiontranslation.tracker;
+package com.example.visiontranslation.vision.tracker;
 
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -15,12 +15,9 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect2d;
 import org.opencv.core.Size;
-import org.opencv.dnn.Dnn;
-import org.opencv.dnn.Net;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.tracking.TrackerBoosting;
 import org.opencv.tracking.TrackerCSRT;
-import org.opencv.tracking.TrackerGOTURN;
 import org.opencv.tracking.TrackerKCF;
 import org.opencv.tracking.TrackerMIL;
 import org.opencv.tracking.TrackerMOSSE;

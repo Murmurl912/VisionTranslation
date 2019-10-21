@@ -17,6 +17,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -25,12 +26,14 @@ import android.widget.Spinner;
 
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.animation.FloatingActionButtonAnimation;
+import com.example.visiontranslation.database.DatabaseManager;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
 import com.example.visiontranslation.ui.camera.CameraFragment;
 import com.example.visiontranslation.ui.text.TextFragment;
 import com.example.visiontranslation.ui.voice.VoiceFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 
@@ -38,15 +41,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     public final String TAG = "MainActivity";
 
-    private boolean isMainHomeFabRotating = false;
     private DrawerLayout mainDrawerLayout;
     private Toolbar mainToolbar;
 
-    private PagerAdapter adapter;
     private Spinner sourceSpinner;
     private Spinner targetSpinner;
     private List<String> languages;
@@ -57,21 +59,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() called");
-        SpeechUtility utility = SpeechUtility.createUtility(this, SpeechConstant.APPID + "=5d7c91ec");
-        initialStatusBar();
         setContentView(R.layout.activity_main);
+        initialStatusBar();
+        SpeechUtility.createUtility(this, SpeechConstant.APPID + "=5d7c91ec");
         initializeSpinner();
         initialFragment();
+        initializeToolbar();
+        initialNavigationDrawer();
+    }
+
+    private void initializeToolbar() {
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_dark);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    private void initialNavigationDrawer() {
         mainDrawerLayout = findViewById(R.id.main_drawer_layout);
+        NavigationView navigationView = findViewById(R.id.main_navigation_view);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     private void initialStatusBar() {
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
 
         getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         );
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
     }
 
     private void initialFragment() {
@@ -163,6 +178,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            mainDrawerLayout.openDrawer(GravityCompat.START);
+            Helper.hideSoftKeyboard(this);
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onBackPressed() {
 
         if(mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -189,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop() called");
+        DatabaseManager.close();
 
     }
 

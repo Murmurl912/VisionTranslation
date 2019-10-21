@@ -12,9 +12,6 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.visiontranslation.detector.text.Block;
-import com.google.android.gms.vision.L;
-import com.google.android.gms.vision.text.TextBlock;
 
 import org.opencv.android.InstallCallbackInterface;
 import org.opencv.android.LoaderCallbackInterface;
@@ -51,19 +48,6 @@ public class Helper {
             Locale.TRADITIONAL_CHINESE
     };
 
-
-
-    public static Block convertTextBlockToBlock(TextBlock block, Size size) {
-        Block cBlock;
-
-        block.getBoundingBox();
-
-        return null;
-    }
-
-    public List<Block> convertTextBlocksToBlocks(List<TextBlock> blocks, Size size) {
-        return null;
-    }
 
     public static int dpToPx(float dp, @NonNull Context context) {
         return (int)

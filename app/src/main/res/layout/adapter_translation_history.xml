@@ -35,7 +35,8 @@
                 />
         </LinearLayout>
 
-        <TextView android:id="@+id/main_text_history_source_text"
+        <EditText android:id="@+id/main_text_history_source_text"
+            android:editable="false"
             android:background="@android:color/transparent"
             android:textIsSelectable="true"
             android:layout_width="match_parent"
@@ -61,7 +62,8 @@
                 android:layout_weight="1"/>
         </LinearLayout>
 
-        <TextView android:id="@+id/main_text_history_target_text"
+        <EditText android:id="@+id/main_text_history_target_text"
+            android:editable="false"
             android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -41,7 +41,6 @@
             android:layout_gravity="bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#50FFFFFF"
             style="?android:attr/buttonBarStyle">
             <ImageButton android:id="@+id/main_camera_flash"
                 android:layout_width="wrap_content"
@@ -94,8 +93,6 @@
                 android:editable="false"
                 android:background="@android:color/transparent"
                 android:lines="2"
-                android:minLines="2"
-                android:maxLines="2"
                 android:gravity="top"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
