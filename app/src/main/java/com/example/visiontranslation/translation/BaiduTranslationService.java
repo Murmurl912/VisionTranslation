@@ -37,9 +37,20 @@ public class BaiduTranslationService {
     public static final String RUSSIAN = "ru";
     public static final String GERMAN = "de";
     public static final String ITALIAN = "it";
-    public static final String SWEDISH = "swe";
     public static final String CHINESE_TRADITIONAL = "cht";
-    public static String[] languages = new String[] {"Auto", "Chinese", "English", "Korean", "French", "Spanish", "Russian", "German", "Italian", "Swedish", "Chinese Tradition"};
+    public static String[] languages = new String[] {
+            "Auto",
+            "Chinese",
+            "Japanese",
+            "English",
+            "Korean",
+            "French",
+            "Spanish",
+            "Russian",
+            "German",
+            "Italian",
+            "Chinese Tradition"
+    };
 
 
     private BaiduTranslationService() {
@@ -54,14 +65,14 @@ public class BaiduTranslationService {
         switch (language) {
             case "Auto": { return AUTO;}
             case "Chinese": {return CHINESE;}
+            case "Japanese": {return JAPANESE;}
             case "English": {return ENGLISH;}
             case "Korean": {return KOREAN;}
             case "French": {return FRENCH;}
-            case "Spanish": {return AUTO;}
-            case "Russian": {return SPANISH;}
+            case "Spanish": {return SPANISH;}
+            case "Russian": {return RUSSIAN;}
             case "German": {return GERMAN;}
             case "Italian": {return ITALIAN;}
-            case "Swedish": {return SWEDISH;}
             case "Chinese Tradition":{return CHINESE_TRADITIONAL;}
             default: return AUTO;
         }

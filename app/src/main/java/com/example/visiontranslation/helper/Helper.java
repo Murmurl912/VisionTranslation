@@ -28,6 +28,7 @@ public class Helper {
     public static String[] languages = new String[] {
             "Auto",
             "Chinese",
+            "Japanese",
             "English",
             "Korean",
             "French",
@@ -35,10 +36,11 @@ public class Helper {
             "Russian",
             "German",
             "Italian",
-            "Swedish",
             "Chinese Tradition"};
+
     public static Locale[] locales = new Locale[] {
             Locale.getDefault(),
+            Locale.JAPAN,
             Locale.UK,
             Locale.KOREA,
             Locale.FRANCE,
@@ -46,7 +48,6 @@ public class Helper {
             new Locale("Russian", "RU"),
             new Locale("German", "DE"),
             new Locale("Italian", "IT"),
-            new Locale("Swedish", "SE"),
             Locale.TRADITIONAL_CHINESE
     };
 
@@ -122,6 +123,7 @@ public class Helper {
         switch (language) {
             case "Auto": { return Locale.getDefault();}
             case "Chinese": {return Locale.CHINA;}
+            case "Japanese": {return Locale.JAPAN;}
             case "English": {return Locale.UK;}
             case "Korean": {return Locale.KOREA;}
             case "French": {return Locale.FRANCE;}
@@ -129,7 +131,6 @@ public class Helper {
             case "Russian": {return new Locale("Russian", "RU");}
             case "German": {return new Locale("German", "DE");}
             case "Italian": {return  new Locale("Italian", "IT");}
-            case "Swedish": {return new Locale("Swedish", "SE");}
             case "Chinese Tradition":{return Locale.TRADITIONAL_CHINESE;}
             default: return Locale.getDefault();
         }

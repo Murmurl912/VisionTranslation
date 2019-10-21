@@ -31,6 +31,8 @@ import com.example.visiontranslation.ui.camera.CameraFragment;
 import com.example.visiontranslation.ui.text.TextFragment;
 import com.example.visiontranslation.ui.voice.VoiceFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechUtility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() called");
+        SpeechUtility utility = SpeechUtility.createUtility(this, SpeechConstant.APPID + "=5d7c91ec");
         initialStatusBar();
         setContentView(R.layout.activity_main);
         initializeSpinner();

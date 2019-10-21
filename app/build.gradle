@@ -37,7 +37,7 @@ dependencies {
 
     implementation 'com.google.android.material:material:1.0.0'
     // implementation 'com.getbase:floatingactionbutton:1.10.1'
-    // implementation 'com.github.clans:fab:1.6.4'
+    // implementation 'com.github.clans:fab:1.6.4'7866
 
     // CameraX core library
     def camerax_version = "1.0.0-alpha05"
@@ -59,7 +59,7 @@ dependencies {
 
     implementation 'com.rmtheis:tess-two:9.0.0'
 
-    implementation 'com.google.android.gms:play-services-vision:19.0.0'
+    implementation 'com.google.android.gms:play-services-vision:18.0.0'
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
@@ -68,4 +68,5 @@ dependencies {
     implementation "android.arch.navigation:navigation-fragment:$nav_version"
     implementation "android.arch.navigation:navigation-ui:$nav_version"
     implementation files('libs/Msc.jar')
+    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude: [])
 }

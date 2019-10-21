@@ -19,6 +19,8 @@ import android.view.ViewGroup;
 
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.helper.Helper;
+import com.iflytek.cloud.InitListener;
+import com.iflytek.cloud.SpeechRecognizer;
 
 import org.opencv.android.InstallCallbackInterface;
 import org.opencv.android.LoaderCallbackInterface;
@@ -60,6 +62,14 @@ public class ImageFragment extends Fragment {
     }
 
     private void init() {
+        SpeechRecognizer.createRecognizer(getContext(), new InitListener() {
+            @Override
+            public void onInit(int i) {
+                Log.d("Speech", "onInit: " + i);
+                SpeechRecognizer recognizer = SpeechRecognizer.getRecognizer();
+            }
+        });
+
         Helper.loadOpenCV(new LoaderCallbackInterface() {
             @Override
             public void onManagerConnected(int status) {

@@ -106,7 +106,7 @@ public class LineDrawable extends Drawable {
         if(translated != null && !translated.equals("")) {
             Rect rect = new Rect();
             paint.getTextBounds(translated, 0, translated.length(), rect);
-            paint.setColor(Color.parseColor("#80000000"));
+            paint.setColor(Color.parseColor("#aa000000"));
             rect.offsetTo(
                     (int)(points[0].x * ratio.getWidth()),
                     (int)(points[0].y * ratio.getHeight())
@@ -123,7 +123,7 @@ public class LineDrawable extends Drawable {
         } else {
             Rect rect = new Rect();
             paint.getTextBounds(value, 0, value.length(), rect);
-            paint.setColor(Color.parseColor("#80000000"));
+            paint.setColor(Color.parseColor("#aa000000"));
             rect.offsetTo(
                     (int)(points[0].x * ratio.getWidth()),
                     (int)(points[0].y * ratio.getHeight())
