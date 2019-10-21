@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+    <item android:id="@+id/main_menu_home"
+        android:icon="@drawable/ic_home_dark"
+        android:title="Home"/>
+    <item android:id="@+id/main_menu_fav"
+        android:icon="@drawable/ic_star_dark"
+        android:title="Star"/>
+    <item android:id="@+id/main_menu_help"
+        android:icon="@drawable/ic_setting_dark"
+        android:title="Setting"/>
+    <item android:id="main_menu_about"
+        android:icon="@drawable/ic_about_dark"
+        android:title="About"/>
 </menu>

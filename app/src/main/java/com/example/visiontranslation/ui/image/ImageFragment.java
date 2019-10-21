@@ -107,6 +107,7 @@ public class ImageFragment extends Fragment {
                 "/data/data/com.example.visiontranslation/files/textbox.prototxt"
 
                 );
+
         MatOfRect matOfRect = new MatOfRect();
         MatOfFloat matOfFloat = new MatOfFloat();
 
