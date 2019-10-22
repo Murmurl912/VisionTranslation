@@ -349,7 +349,7 @@ public class TextFragment extends Fragment {
         Button ok = dialog.findViewById(R.id.dialog_ok_button);
         ok.setTag("Before");
         Button cancel = dialog.findViewById(R.id.dialog_cancel_button);
-
+        dialog.setCancelable(false);
         progressBar.setVisibility(View.INVISIBLE);
 
         ok.setOnClickListener(v->{

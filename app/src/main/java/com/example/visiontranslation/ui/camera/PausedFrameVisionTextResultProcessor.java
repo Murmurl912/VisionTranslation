@@ -124,6 +124,7 @@ public class PausedFrameVisionTextResultProcessor implements
             }
             selected.clear();
             localSelection.clear();
+            overlay.update();
         }
     }
 

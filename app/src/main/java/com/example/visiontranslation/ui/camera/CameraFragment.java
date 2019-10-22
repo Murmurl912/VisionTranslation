@@ -279,4 +279,7 @@ public class CameraFragment extends Fragment
 
     }
 
+    private void clear() {
+
+    }
 }
