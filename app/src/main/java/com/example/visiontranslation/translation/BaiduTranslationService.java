@@ -37,7 +37,7 @@ public class BaiduTranslationService {
     public static final String RUSSIAN = "ru";
     public static final String GERMAN = "de";
     public static final String ITALIAN = "it";
-    public static final String CHINESE_TRADITIONAL = "cht";
+
     public static String[] languages = new String[] {
             "Auto",
             "Chinese",
@@ -48,8 +48,7 @@ public class BaiduTranslationService {
             "Spanish",
             "Russian",
             "German",
-            "Italian",
-            "Chinese Tradition"
+            "Italian"
     };
 
 
@@ -73,7 +72,6 @@ public class BaiduTranslationService {
             case "Russian": {return RUSSIAN;}
             case "German": {return GERMAN;}
             case "Italian": {return ITALIAN;}
-            case "Chinese Tradition":{return CHINESE_TRADITIONAL;}
             default: return AUTO;
         }
     }

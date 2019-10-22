@@ -19,19 +19,15 @@ import android.view.ViewGroup;
 
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.helper.Helper;
-import com.iflytek.cloud.InitListener;
-import com.iflytek.cloud.SpeechRecognizer;
 
 import org.opencv.android.InstallCallbackInterface;
 import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfRect;
 import org.opencv.text.TextDetectorCNN;
 
-import java.io.IOError;
 import java.io.IOException;
 
 /**

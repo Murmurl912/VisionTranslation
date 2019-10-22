@@ -29,6 +29,7 @@ import com.example.visiontranslation.database.DatabaseManager;
 import com.example.visiontranslation.database.TextTranslationHistory;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
+import com.example.visiontranslation.translation.GoogleTranslationService;
 import com.example.visiontranslation.ui.MainActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -55,12 +56,8 @@ public class TextFragment extends Fragment {
 
     private EditText source;
     private TextView target;
-    private ImageButton speakSourceButton;
-    private ImageButton speakTargetButton;
-    private ImageButton translateButton;
 
     private TextTranslationHistoryAdapter adapter;
-    private RecyclerView recyclerView;
 
     public TextFragment() {
         // Required empty public constructor
@@ -90,7 +87,7 @@ public class TextFragment extends Fragment {
         source  = view.findViewById(R.id.main_text_source_edit_text);
         target = view.findViewById(R.id.main_text_target_text);
 
-        speakSourceButton = view.findViewById(R.id.main_text_speak_source_button);
+        ImageButton speakSourceButton = view.findViewById(R.id.main_text_speak_source_button);
         speakSourceButton.setOnClickListener(v->{
            speak(
                    source.getText().toString(),
@@ -98,7 +95,7 @@ public class TextFragment extends Fragment {
                    );
         });
 
-        speakTargetButton = view.findViewById(R.id.main_text_speak_target_button);
+        ImageButton speakTargetButton = view.findViewById(R.id.main_text_speak_target_button);
         speakTargetButton.setOnClickListener(v->{
             speak(
                     target.getText().toString(),
@@ -106,7 +103,7 @@ public class TextFragment extends Fragment {
             );
         });
 
-        translateButton = view.findViewById(R.id.main_text_translate_button);
+        ImageButton translateButton = view.findViewById(R.id.main_text_translate_button);
         translateButton.setOnClickListener(v->{
             Helper.hideSoftKeyboard(getActivity());
             String text = source.getText().toString();
@@ -115,6 +112,12 @@ public class TextFragment extends Fragment {
                 return;
             }
 
+            translate(
+                    ((MainActivity) getActivity()).getSourceLanguage(),
+                    ((MainActivity) getActivity()).getTargetLanguage(),
+                    text);
+
+            /*
             BaiduTranslationService.getBaiduTranslationService().request(
                     BaiduTranslationService.getCode(((MainActivity) getActivity()).getSourceLanguage())
                     ,
@@ -126,7 +129,12 @@ public class TextFragment extends Fragment {
                         public void response(String s, int status) {
                             if(status == STATUS_OK) {
                                 target.post(()->target.setText(s));
-                                recordHistoryToDatabase(text, s);
+                                recordHistoryToDatabase(
+                                        text,
+                                        s,
+                                        ((MainActivity) getActivity()).getSourceLanguage(),
+                                        ((MainActivity) getActivity()).getTargetLanguage()
+                                        );
                                 view.post(()->{
                                     Toast.makeText(getContext(), "Translation Services Success", Toast.LENGTH_SHORT).show();
                                 });
@@ -137,7 +145,11 @@ public class TextFragment extends Fragment {
                             }
                         }
                     }
+
+
             );
+
+             */
             Helper.hideSoftKeyboard(getActivity());
             source.clearFocus();
         });
@@ -150,7 +162,7 @@ public class TextFragment extends Fragment {
 
         });
 
-        recyclerView = view.findViewById(R.id.main_text_recycler_view);
+        RecyclerView recyclerView = view.findViewById(R.id.main_text_recycler_view);
         adapter = new TextTranslationHistoryAdapter(getContext(), getActivity());
         recyclerView.setAdapter(adapter);
 
@@ -177,7 +189,7 @@ public class TextFragment extends Fragment {
     }
 
 
-    private void recordHistoryToDatabase(String source, String target) {
+    private void recordHistoryToDatabase(String source, String target, String source_lg, String target_lg) {
         if(true) {
             return;
         }
@@ -189,8 +201,8 @@ public class TextFragment extends Fragment {
                         false,
                         source,
                         target,
-                        ((MainActivity)getActivity()).getSourceLanguage(),
-                        ((MainActivity)getActivity()).getTargetLanguage()
+                        source_lg,
+                        target_lg
                 );
         if(textTranslationHistory.contain(history)) {
             textTranslationHistory.update(history);
@@ -298,11 +310,40 @@ public class TextFragment extends Fragment {
         });
     }
 
+    private void translate(String source, String target, String value) {
+        new Thread(()->{
+            GoogleTranslationService.request(source, target, value,
+                    new GoogleTranslationService.TranslationCallback() {
+                        @Override
+                        public void onTranslationSuccess(String from, String to, String value, String result) {
+                            Log.d(TAG, "Translation Result: " + result);
+                            recordHistoryToDatabase(
+                                    value, result, source, target
+                            );
+                            TextFragment.this.target.post(()->{
+                                TextFragment.this.target.setText(result);
+                            });
+                            getActivity().runOnUiThread(()->{
+                                Toast.makeText(getContext(), "Translation Success", Toast.LENGTH_SHORT).show();
+                            });
+
+                        }
+
+                        @Override
+                        public void onTranslationFailure(String from, String to, String value, Exception e) {
+                            Log.d(TAG, "Translation Failed", e);
+                            getActivity().runOnUiThread(()->{
+                                Toast.makeText(getContext(), "Translation Failure", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    });
+        }).start();
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.d(TAG, "onDestoryView() called");
+        Log.d(TAG, "onDestroyView() called");
     }
 
 }

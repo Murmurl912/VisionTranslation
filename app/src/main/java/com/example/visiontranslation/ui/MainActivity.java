@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity
     public final String TAG = "MainActivity";
 
     private DrawerLayout mainDrawerLayout;
-    private Toolbar mainToolbar;
 
     private Spinner sourceSpinner;
     private Spinner targetSpinner;

@@ -60,7 +60,7 @@ dependencies {
 
     implementation 'com.rmtheis:tess-two:9.0.0'
 
-    implementation 'com.google.android.gms:play-services-vision:18.0.0'
+    implementation 'com.google.android.gms:play-services-vision:19.0.0'
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
@@ -76,6 +76,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:17.2.0'
     implementation 'com.google.firebase:firebase-ml-vision:24.0.0'
     implementation 'com.google.firebase:firebase-ml-natural-language-translate-model:20.0.7'
+    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude: [])
 }
 
 apply plugin: 'com.google.gms.google-services'

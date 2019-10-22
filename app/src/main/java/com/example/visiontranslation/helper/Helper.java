@@ -32,8 +32,8 @@ public class Helper {
             "Spanish",
             "Russian",
             "German",
-            "Italian",
-            "Chinese Tradition"};
+            "Italian"
+    };
 
     public static Locale[] locales = new Locale[] {
             Locale.getDefault(),
@@ -45,7 +45,6 @@ public class Helper {
             new Locale("Russian", "RU"),
             new Locale("German", "DE"),
             new Locale("Italian", "IT"),
-            Locale.TRADITIONAL_CHINESE
     };
 
 
@@ -115,7 +114,6 @@ public class Helper {
             case "Russian": {return new Locale("Russian", "RU");}
             case "German": {return new Locale("German", "DE");}
             case "Italian": {return  new Locale("Italian", "IT");}
-            case "Chinese Tradition":{return Locale.TRADITIONAL_CHINESE;}
             default: return Locale.getDefault();
         }
     }
