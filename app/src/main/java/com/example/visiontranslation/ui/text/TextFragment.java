@@ -1,6 +1,7 @@
 package com.example.visiontranslation.ui.text;
 
 
+import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -14,29 +15,35 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.util.Size;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.visiontranslation.R;
-import com.example.visiontranslation.VisionTranslationApplication;
 import com.example.visiontranslation.animation.FloatingActionButtonAnimation;
 import com.example.visiontranslation.database.DatabaseManager;
 import com.example.visiontranslation.database.TextTranslationHistory;
 import com.example.visiontranslation.helper.Helper;
-import com.example.visiontranslation.translation.BaiduTranslationService;
 import com.example.visiontranslation.translation.GoogleTranslationService;
 import com.example.visiontranslation.ui.MainActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateRemoteModel;
 
 import java.util.Locale;
 import java.util.Objects;
 
-import static com.example.visiontranslation.translation.BaiduTranslationService.STATUS_OK;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,7 +65,7 @@ public class TextFragment extends Fragment {
     private TextView target;
 
     private TextTranslationHistoryAdapter adapter;
-
+    private RecyclerView recyclerView;
     public TextFragment() {
         // Required empty public constructor
         Log.d(TAG, "TextFragment() called");
@@ -117,52 +124,16 @@ public class TextFragment extends Fragment {
                     ((MainActivity) getActivity()).getTargetLanguage(),
                     text);
 
-            /*
-            BaiduTranslationService.getBaiduTranslationService().request(
-                    BaiduTranslationService.getCode(((MainActivity) getActivity()).getSourceLanguage())
-                    ,
-                    BaiduTranslationService.getCode(((MainActivity) getActivity()).getTargetLanguage())
-                    ,
-                    text,
-                    new BaiduTranslationService.Response() {
-                        @Override
-                        public void response(String s, int status) {
-                            if(status == STATUS_OK) {
-                                target.post(()->target.setText(s));
-                                recordHistoryToDatabase(
-                                        text,
-                                        s,
-                                        ((MainActivity) getActivity()).getSourceLanguage(),
-                                        ((MainActivity) getActivity()).getTargetLanguage()
-                                        );
-                                view.post(()->{
-                                    Toast.makeText(getContext(), "Translation Services Success", Toast.LENGTH_SHORT).show();
-                                });
-                            } else {
-                                view.post(()->{
-                                    Toast.makeText(getContext(), "Translation Services Unavailable", Toast.LENGTH_SHORT).show();
-                                });
-                            }
-                        }
-                    }
 
-
-            );
-
-             */
             Helper.hideSoftKeyboard(getActivity());
             source.clearFocus();
         });
 
         view.findViewById(R.id.main_text_clear_source_content_button).setOnClickListener(v->{
-            Helper.hideSoftKeyboard(getActivity());
-            source.setText("");
-            target.setText("");
-            source.clearFocus();
-
+            clearContent();
         });
 
-        RecyclerView recyclerView = view.findViewById(R.id.main_text_recycler_view);
+        recyclerView = view.findViewById(R.id.main_text_recycler_view);
         adapter = new TextTranslationHistoryAdapter(getContext(), getActivity());
         recyclerView.setAdapter(adapter);
 
@@ -311,39 +282,155 @@ public class TextFragment extends Fragment {
     }
 
     private void translate(String source, String target, String value) {
-        new Thread(()->{
-            GoogleTranslationService.request(source, target, value,
-                    new GoogleTranslationService.TranslationCallback() {
-                        @Override
-                        public void onTranslationSuccess(String from, String to, String value, String result) {
-                            Log.d(TAG, "Translation Result: " + result);
-                            recordHistoryToDatabase(
-                                    value, result, source, target
-                            );
-                            TextFragment.this.target.post(()->{
-                                TextFragment.this.target.setText(result);
-                            });
-                            getActivity().runOnUiThread(()->{
-                                Toast.makeText(getContext(), "Translation Success", Toast.LENGTH_SHORT).show();
-                            });
+        this.source.clearFocus();
+        this.target.setText("");
+        GoogleTranslationService.request(
+                source,
+                target,
+                value, new GoogleTranslationService.TranslationCallback() {
+                    @Override
+                    public void onTranslationSuccess(String from, String to, String value, String result) {
+                        TextFragment.this.target.post(()->TextFragment.this.target.setText(result));
+                    }
 
-                        }
+                    @Override
+                    public void onTranslationFailure(String from, String to, String value, Exception e) {
+                        Toast.makeText(getContext(), "Translation Failed", Toast.LENGTH_SHORT).show();
+                    }
 
-                        @Override
-                        public void onTranslationFailure(String from, String to, String value, Exception e) {
-                            Log.d(TAG, "Translation Failed", e);
-                            getActivity().runOnUiThread(()->{
-                                Toast.makeText(getContext(), "Translation Failure", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    });
-        }).start();
+                    @Override
+                    public void onRequireDownloadModel(String from, String to, String value, FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target) {
+                        Toast.makeText(getContext(), "Need to download model", Toast.LENGTH_SHORT).show();
+                        downloadDialog(source, target, new DialogCallback() {
+                            @Override
+                            public void onResult(boolean isSuccess) {
+
+                            }
+                        });
+                    }
+                }
+
+                );
+    }
+
+    private void hideHistory() {
+        recyclerView.post(()->recyclerView.setVisibility(View.GONE));
+    }
+
+    private void showHistory() {
+        recyclerView.post(()->recyclerView.setVisibility(View.VISIBLE));
+    }
+
+    private void clearContent() {
+        Helper.hideSoftKeyboard(getActivity());
+        source.setText("");
+        target.setText("");
+        source.clearFocus();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         Log.d(TAG, "onDestroyView() called");
+    }
+
+
+    private void downloadDialog(FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target, DialogCallback callback) {
+        Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.dialog_download);
+        ProgressBar progressBar = dialog.findViewById(R.id.dialog_progressBar);
+        TextView message = dialog.findViewById(R.id.dialog_message);
+        Button ok = dialog.findViewById(R.id.dialog_ok_button);
+        ok.setTag("Before");
+        Button cancel = dialog.findViewById(R.id.dialog_cancel_button);
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        ok.setOnClickListener(v->{
+            if(((String)ok.getTag()).equals("After")) {
+                dialog.dismiss();
+                return;
+            }
+
+            cancel.post(()->{
+                cancel.setEnabled(false);
+            });
+
+            message.post(()->{
+                message.setText("Downloading...");
+            });
+
+            progressBar.post(()-> {
+                progressBar.setVisibility(View.VISIBLE);
+                progressBar.setMax(2);
+                progressBar.setProgress(0);
+            });
+
+            GoogleTranslationService.downloadModel(source, new GoogleTranslationService.ModelDownloadCallback() {
+                @Override
+                public void onDownloadComplete() {
+                    GoogleTranslationService.downloadModel(target, new GoogleTranslationService.ModelDownloadCallback() {
+                        @Override
+                        public void onDownloadComplete() {
+                            progressBar.post(()-> {
+                                progressBar.setProgress(2);
+                                progressBar.setVisibility(View.INVISIBLE);
+                            });
+                            message.post(()->{
+                                message.setText("Download Success!");
+                            });
+                            ok.post(()->{
+                                ok.setTag("After");
+                            });
+                        }
+
+                        @Override
+                        public void onDownloadFailure(Exception e) {
+                            progressBar.post(()-> {
+                                progressBar.setVisibility(View.INVISIBLE);
+                            });
+                            message.post(()->{
+                                message.setText("Download Failed!");
+                            });
+                            ok.post(()->{
+                                ok.setTag("After");
+                            });
+                            callback.onResult(false);
+                        }
+                    });
+                }
+
+                @Override
+                public void onDownloadFailure(Exception e) {
+                    progressBar.post(()-> {
+                        progressBar.setVisibility(View.INVISIBLE);
+                    });
+                    message.post(()->{
+                        message.setText("Download Failed!");
+                    });
+                    ok.post(()->{
+                        ok.setTag("After");
+                    });
+                    callback.onResult(false);
+                }
+            });
+
+        });
+
+        cancel.setOnClickListener(v->{
+            dialog.dismiss();
+        });
+
+
+        dialog.show();
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.show();
+    }
+
+    public interface DialogCallback {
+        public void onResult(boolean isSuccess);
     }
 
 }

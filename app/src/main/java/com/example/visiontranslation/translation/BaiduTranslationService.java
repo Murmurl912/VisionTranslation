@@ -1,15 +1,10 @@
 package com.example.visiontranslation.translation;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.example.visiontranslation.database.DatabaseManager;
 import com.example.visiontranslation.database.TranslationCache;
 import com.google.gson.Gson;
-
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -27,7 +22,6 @@ public class BaiduTranslationService {
     public static final  int STATUS_ERROR = 0;
     private static BaiduTranslationService service;
 
-    public static final String AUTO = "auto";
     public static final String CHINESE = "zh";
     public static final String ENGLISH = "en";
     public static final String JAPANESE = "jp";
@@ -62,7 +56,6 @@ public class BaiduTranslationService {
 
     public static String getCode(@NonNull String language) {
         switch (language) {
-            case "Auto": { return AUTO;}
             case "Chinese": {return CHINESE;}
             case "Japanese": {return JAPANESE;}
             case "English": {return ENGLISH;}
@@ -72,7 +65,7 @@ public class BaiduTranslationService {
             case "Russian": {return RUSSIAN;}
             case "German": {return GERMAN;}
             case "Italian": {return ITALIAN;}
-            default: return AUTO;
+            default: return CHINESE;
         }
     }
 
@@ -96,7 +89,6 @@ public class BaiduTranslationService {
         } else{
             translation = entry.getResult();
         }
-        DatabaseManager.getTranslationCache().clearCache();
         return translation;
     }
 
@@ -107,9 +99,8 @@ public class BaiduTranslationService {
                 String tempstr = "";
                 int status = 1;
                 try{
-                    for(int i=0; i<query.length(); i++)
-                    {
-                        if(query.charAt(i) == '\n'){
+                    for(int i=0; i<query.length(); i++) {
+                        if(query.charAt(i) == '\n') {
                             if(tempstr != "") {
                                 s = s + transResult(from, to, tempstr) + "\n";
                                 tempstr = "";
@@ -126,6 +117,8 @@ public class BaiduTranslationService {
                                 s = s + "\n";
                         }
                     }
+
+                    status = 1;
 
                 }catch(Exception e)	{
                     status = 0;

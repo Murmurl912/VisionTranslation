@@ -1,12 +1,9 @@
 package com.example.visiontranslation.translation;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
 import com.google.firebase.ml.common.modeldownload.FirebaseModelManager;
@@ -17,6 +14,9 @@ import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateRemoteM
 import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslator;
 import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOptions;
 
+import java.util.HashMap;
+import java.util.Map;
+
 //ToDo: Add model manager
 //ToDo: Add dialog to show download info
 //ToDo: Fix translation fail at first attempt bug
@@ -24,7 +24,6 @@ import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOption
 public class GoogleTranslationService {
 
     public static String[] languages = new String[] {
-            "Auto",
             "Chinese",
             "Japanese",
             "English",
@@ -46,11 +45,14 @@ public class GoogleTranslationService {
     public static final int GERMAN = FirebaseTranslateLanguage.DE;
     public static final int ITALIAN = FirebaseTranslateLanguage.IT;
 
+    private static boolean taskA = false;
+    private static boolean taskB = false;
+
     private GoogleTranslationService() {
 
     }
 
-    private static int getCode(String language) {
+    public static int getCode(String language) {
         switch (language) {
             case "Chinese": return CHINESE;
             case "Japanese": return JAPANESE;
@@ -65,85 +67,83 @@ public class GoogleTranslationService {
         }
     }
 
-    public static void download() {
-
-    }
-
-    public static boolean isModelDownload(FirebaseTranslateRemoteModel model) {
-        boolean flag = false;
-
-        FirebaseModelManager modelManager = FirebaseModelManager.getInstance();
-        Task<Boolean> task = modelManager.isModelDownloaded(model);
-        if(task.isComplete() && task.isSuccessful()) {
-            Boolean res = task.getResult();
-            if(res != null) {
-                flag = res;
-            }
-        }
-        return flag;
-    }
-
-    public static void downloadModel(FirebaseTranslateRemoteModel model) {
+    public static void downloadModel(FirebaseTranslateRemoteModel model, ModelDownloadCallback callback) {
         FirebaseModelDownloadConditions conditions = new FirebaseModelDownloadConditions.Builder()
                 .build();
-        FirebaseModelManager
+        Task<Void> task = FirebaseModelManager
                 .getInstance()
                 .download(model, conditions)
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        callback.onDownloadFailure(e);
+                    }
+                })
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if(task.isSuccessful()) {
-
+                            callback.onDownloadComplete();
                         } else {
-
+                            callback.onDownloadFailure(task.getException());
                         }
                     }
                 });
+
     }
 
-    public static void getTranslator(int source, int target, @NonNull OnTranslatorInitializeComplete callback) {
+    public static void getTranslator(int source, int target, @NonNull TranslatorInitializeListener listener) {
         FirebaseTranslatorOptions options =
                 new FirebaseTranslatorOptions.Builder()
                         .setSourceLanguage(source)
                         .setTargetLanguage(target)
                         .build();
 
-        FirebaseTranslator translator = FirebaseNaturalLanguage
-                .getInstance()
-                .getTranslator(options);
-
-
         FirebaseModelDownloadConditions conditions = new FirebaseModelDownloadConditions.Builder()
                 .build();
 
-        translator.downloadModelIfNeeded(conditions)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
+        FirebaseTranslateRemoteModel sourceModel = new FirebaseTranslateRemoteModel
+                .Builder(source).build();
+        FirebaseTranslateRemoteModel targetModel = new FirebaseTranslateRemoteModel
+                .Builder(target).build();
 
+        FirebaseModelManager modelManager = FirebaseModelManager.getInstance();
+
+        modelManager.isModelDownloaded(sourceModel).addOnCompleteListener(new OnCompleteListener<Boolean>() {
+
+            boolean isSourceDownload = false;
+            boolean isTargetDownload = false;
+
+            @Override
+            public void onComplete(@NonNull Task<Boolean> task) {
+                    if(task.isSuccessful()) {
+                        if(task.getResult() != null) {
+                            isSourceDownload = task.getResult();
+                        }
                     }
-                })
-                .addOnSuccessListener(
-                        new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void v) {
-                                callback.onSuccess(translator);
+                    modelManager.isModelDownloaded(targetModel).addOnCompleteListener(new OnCompleteListener<Boolean>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Boolean> task) {
+                            if(task.isSuccessful()) {
+                                if(task.getResult() != null) {
+                                    isTargetDownload = task.getResult();
+                                }
                             }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                              callback.onFailure(e);
+
+                            if(isSourceDownload && isTargetDownload) {
+                                listener.onSuccess(
+                                        FirebaseNaturalLanguage
+                                                .getInstance()
+                                                .getTranslator(options)
+                                );
+                            } else {
+                                listener.onRequestModel(sourceModel, targetModel);
                             }
-                        });
+                        }
+                    });
+            }
+        });
 
-    }
-
-
-    public interface OnTranslatorInitializeComplete {
-        public void onSuccess(@NonNull FirebaseTranslator translator);
-        public void onFailure(Exception e);
     }
 
     public static void request(@NonNull String from,
@@ -152,25 +152,34 @@ public class GoogleTranslationService {
                         @NonNull TranslationCallback callback) {
         int s = getCode(from);
         int t = getCode(to);
-        getTranslator(s, t, new OnTranslatorInitializeComplete() {
+        getTranslator(s, t, new TranslatorInitializeListener() {
             @Override
             public void onSuccess(@NonNull FirebaseTranslator translator) {
-                Task<String> result = translator.translate(value);
-                result.addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if(task.isSuccessful()) {
-                            callback.onTranslationSuccess(from, to, value, task.getResult());
-                        } else {
-                            callback.onTranslationFailure(from, to, value, task.getException());
-                        }
-                    }
-                });
+                translator.translate(value)
+                        .addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                if(task.isSuccessful()) {
+                                    String result = task.getResult();
+                                    if(result != null) {
+                                        callback.onTranslationSuccess(from, to, value, task.getResult());
+                                        return;
+                                    }
+                                }
+                                callback.onTranslationFailure(from, to, value, task.getException());
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                callback.onTranslationFailure(from, to, value, e);
+                            }
+                        });
             }
 
             @Override
-            public void onFailure(Exception e) {
-                callback.onTranslationFailure(from, to, value, e);
+            public void onRequestModel(FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target) {
+                callback.onRequireDownloadModel(from, to, value, source, target);
             }
         });
     }
@@ -181,8 +190,17 @@ public class GoogleTranslationService {
 
         public void onTranslationFailure(String from, String to, String value, Exception e);
 
-        public void onRequireDownloadModel(String from, String to, String value);
+        public void onRequireDownloadModel(String from, String to, String value, FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target);
     }
 
+    public interface ModelDownloadCallback {
+        public void onDownloadComplete();
 
+        public void onDownloadFailure(Exception e);
+    }
+
+    public interface TranslatorInitializeListener {
+        public void onSuccess(@NonNull FirebaseTranslator translator);
+        public void onRequestModel(FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target);
+    }
 }

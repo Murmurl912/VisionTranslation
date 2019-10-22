@@ -23,7 +23,6 @@ import java.util.Locale;
 public class Helper {
 
     public static String[] languages = new String[] {
-            "Auto",
             "Chinese",
             "Japanese",
             "English",
@@ -104,7 +103,6 @@ public class Helper {
 
     public static Locale getLocaleByLanguage(String language) {
         switch (language) {
-            case "Auto": { return Locale.getDefault();}
             case "Chinese": {return Locale.CHINA;}
             case "Japanese": {return Locale.JAPAN;}
             case "English": {return Locale.UK;}

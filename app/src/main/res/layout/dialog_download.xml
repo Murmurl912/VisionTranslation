@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/dialog_message"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:text="Need To Download Translation Model To Perform Translation."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <ProgressBar
+        android:layout_gravity="center"
+        android:id="@+id/dialog_progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <LinearLayout
+        style="?attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+        <Button
+            android:textColor="@color/black"
+            style="?attr/buttonBarButtonStyle"
+            android:id="@+id/dialog_cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"/>
+        <Button
+            android:textColor="@color/black"
+            style="?attr/buttonBarButtonStyle"
+            android:id="@+id/dialog_ok_button"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="Ok"
+            />
+    </LinearLayout>
+</LinearLayout>
