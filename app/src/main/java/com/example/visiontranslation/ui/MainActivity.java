@@ -13,6 +13,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -172,10 +173,33 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void aboutDialog() {
+
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
+            case R.id.main_menu_home: {
+                mainDrawerLayout.closeDrawer(GravityCompat.START);
+                this.onBackPressed();
+            } break;
 
+            case R.id.main_menu_fav: {
+                mainDrawerLayout.closeDrawer(GravityCompat.START);
+                Intent intent = new Intent(this, OfflineTranslationActivity.class);
+                startActivity(intent);
+            } break;
+
+            case R.id.main_menu_setting: {
+                mainDrawerLayout.closeDrawer(GravityCompat.START);
+                startActivity(new Intent(this, SettingActivity.class));
+            } break;
+
+            case R.id.main_menu_about: {
+                mainDrawerLayout.closeDrawer(GravityCompat.START);
+
+            } break;
         }
 
         return false;

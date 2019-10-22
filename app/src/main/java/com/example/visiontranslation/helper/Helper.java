@@ -91,13 +91,28 @@ public class Helper {
         return output.toString();
     }
 
-    public static void hideSoftKeyboard(@Nullable Activity activity) {
-        if (activity != null) {
+    public static void hideSoftKeyboard(@NonNull Activity activity) {
+        try {
             View currentFocus = activity.getCurrentFocus();
             if (currentFocus != null) {
                 InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
             }
+        } catch (NullPointerException e) {
+
+        }
+    }
+
+    public static void showSoftKeyboard(@NonNull Activity activity) {
+
+        try {
+            View currentFocus = activity.getCurrentFocus();
+            if (currentFocus != null) {
+                InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputMethodManager.showSoftInput(currentFocus, 0);
+            }
+        } catch (NullPointerException e) {
+
         }
     }
 

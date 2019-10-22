@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -122,6 +123,12 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
             this.histories.add((TextTranslationHistory.TranslationHistory)h.clone());
         }
         activity.runOnUiThread(this::notifyDataSetChanged);
+        histories.sort(new Comparator<TextTranslationHistory.TranslationHistory>() {
+            @Override
+            public int compare(TextTranslationHistory.TranslationHistory a, TextTranslationHistory.TranslationHistory b) {
+                return (int)(a.getTime() - b.getTime());
+            }
+        });
     }
 
     public void add(TextTranslationHistory.TranslationHistory history) {
@@ -134,7 +141,7 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
     public void add(int index, TextTranslationHistory.TranslationHistory history) {
         histories.add(index, (TextTranslationHistory.TranslationHistory)history.clone());
         activity.runOnUiThread(()->{
-            notifyItemInserted(histories.size() - index);
+            notifyItemInserted(index);
         });
     }
 
@@ -228,8 +235,8 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.pupup_delete: {
-                        remove(position);
                         DatabaseManager.getTextTranslationHistory().remove(h);
+                        remove(position);
                     } break;
                 };
                 return true;

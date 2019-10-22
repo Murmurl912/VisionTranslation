@@ -15,18 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
-import android.util.Size;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -144,6 +139,18 @@ public class TextFragment extends Fragment {
             Toast.makeText(getContext(), "Copied!", Toast.LENGTH_SHORT).show();
         });
 
+
+        view.findViewById(R.id.main_text_text_view_a).setOnClickListener(v->{
+            source.performClick();
+            source.requestFocus();
+            Helper.showSoftKeyboard(getActivity());
+        });
+        view.findViewById(R.id.main_text_text_view_b).setOnClickListener(v->{
+            source.performClick();
+            source.requestFocus();
+            Helper.showSoftKeyboard(getActivity());
+        });
+
         initializeActionButton(view);
 
         initial(view);
@@ -161,9 +168,6 @@ public class TextFragment extends Fragment {
 
 
     private void recordHistoryToDatabase(String source, String target, String source_lg, String target_lg) {
-        if(true) {
-            return;
-        }
 
         TextTranslationHistory textTranslationHistory = DatabaseManager.getTextTranslationHistory();
         TextTranslationHistory.TranslationHistory history =
@@ -182,6 +186,7 @@ public class TextFragment extends Fragment {
         } else {
             textTranslationHistory.add(history);
         }
+
         adapter.add(0, history);
     }
 
@@ -291,6 +296,7 @@ public class TextFragment extends Fragment {
                     @Override
                     public void onTranslationSuccess(String from, String to, String value, String result) {
                         TextFragment.this.target.post(()->TextFragment.this.target.setText(result));
+                        recordHistoryToDatabase(value, result, from, to);
                     }
 
                     @Override
@@ -425,8 +431,10 @@ public class TextFragment extends Fragment {
         dialog.show();
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        dialog.show();
+        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.90);
+        lp.width = width;
+        dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+
     }
 
     public interface DialogCallback {
