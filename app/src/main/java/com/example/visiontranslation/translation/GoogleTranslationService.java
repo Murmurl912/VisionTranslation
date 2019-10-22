@@ -65,6 +65,42 @@ public class GoogleTranslationService {
         }
     }
 
+    public static void download() {
+
+    }
+
+    public static boolean isModelDownload(FirebaseTranslateRemoteModel model) {
+        boolean flag = false;
+
+        FirebaseModelManager modelManager = FirebaseModelManager.getInstance();
+        Task<Boolean> task = modelManager.isModelDownloaded(model);
+        if(task.isComplete() && task.isSuccessful()) {
+            Boolean res = task.getResult();
+            if(res != null) {
+                flag = res;
+            }
+        }
+        return flag;
+    }
+
+    public static void downloadModel(FirebaseTranslateRemoteModel model) {
+        FirebaseModelDownloadConditions conditions = new FirebaseModelDownloadConditions.Builder()
+                .build();
+        FirebaseModelManager
+                .getInstance()
+                .download(model, conditions)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()) {
+
+                        } else {
+
+                        }
+                    }
+                });
+    }
+
     public static void getTranslator(int source, int target, @NonNull OnTranslatorInitializeComplete callback) {
         FirebaseTranslatorOptions options =
                 new FirebaseTranslatorOptions.Builder()
@@ -75,6 +111,7 @@ public class GoogleTranslationService {
         FirebaseTranslator translator = FirebaseNaturalLanguage
                 .getInstance()
                 .getTranslator(options);
+
 
         FirebaseModelDownloadConditions conditions = new FirebaseModelDownloadConditions.Builder()
                 .build();
@@ -144,5 +181,8 @@ public class GoogleTranslationService {
 
         public void onTranslationFailure(String from, String to, String value, Exception e);
 
+        public void onRequireDownloadModel(String from, String to, String value);
     }
+
+
 }
