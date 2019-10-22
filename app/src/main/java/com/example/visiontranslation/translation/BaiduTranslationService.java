@@ -33,7 +33,6 @@ public class BaiduTranslationService {
     public static final String ITALIAN = "it";
 
     public static String[] languages = new String[] {
-            "Auto",
             "Chinese",
             "Japanese",
             "English",

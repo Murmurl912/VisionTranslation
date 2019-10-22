@@ -38,7 +38,6 @@ public class LineDrawable extends Drawable {
         this.lineBox = line.getBoundingBox();
         this.paint = new Paint();
         this.value = line.getValue();
-        this.translated = translated;
         this.language = line.getLanguage();
         this.points = line.getCornerPoints();
         fontSize = -1;
@@ -47,21 +46,6 @@ public class LineDrawable extends Drawable {
         textHeight = 0;
 
         translated = "";
-        /*
-        BaiduTranslationService.getBaiduTranslationService().request(
-                BaiduTranslationService.AUTO,
-                BaiduTranslationService.getCode(targetLanguage),
-                value,
-                new BaiduTranslationService.Response() {
-                    @Override
-                    public void response(String s, int status) {
-                        if(translated != null) {
-                            translated = s;
-                        }
-                    }
-                }
-        );
-        */
     }
 
     @Override

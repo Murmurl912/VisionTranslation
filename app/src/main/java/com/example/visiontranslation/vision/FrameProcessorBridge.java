@@ -65,15 +65,28 @@ public abstract class FrameProcessorBridge<T> implements FrameProcessor {
     @NonNull
     public abstract Bitmap adapt(@NonNull Bitmap bitmap, int rotation);
 
+    private boolean isProcessing = false;
+
     @Override
     public void process(@NonNull Frame frame) {
-        Bitmap bitmap = nv21ToBitmap(
-                frame.getData(),
-                frame.getSize().getWidth(),
-                frame.getSize().getHeight()
-        );
+        try {
+            if(isProcessing) {
+                return;
+            }
+            isProcessing = true;
+            Bitmap bitmap = nv21ToBitmap(
+                    frame.getData(),
+                    frame.getSize().getWidth(),
+                    frame.getSize().getHeight()
+            );
 
-        processor.onFrame(adapt(bitmap, frame.getRotation()));
+            processor.onFrame(adapt(bitmap, frame.getRotation()));
+        } catch (Exception e) {
+
+        } finally {
+            isProcessing = false;
+        }
+
     }
 
 }

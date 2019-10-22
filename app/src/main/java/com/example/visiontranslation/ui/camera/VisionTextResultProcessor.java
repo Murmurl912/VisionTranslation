@@ -45,9 +45,6 @@ public class VisionTextResultProcessor implements
 
         for(int i = 0; i < result.size(); i++) {
             TextBlock block = result.get(i);
-            if(block.getLanguage().equals("und")) {
-                break;
-            }
 
             for(Text textLine : block.getComponents()) {
 

@@ -118,10 +118,6 @@ public class MainActivity extends AppCompatActivity
         targetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(position == 0) {
-                    targetSpinner.setSelection(1);
-                    return;
-                }
                 SharedPreferences sharedPreferences = getSharedPreferences("Default Language", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt("Default Target", position);
