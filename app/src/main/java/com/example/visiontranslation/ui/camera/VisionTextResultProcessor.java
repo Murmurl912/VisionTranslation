@@ -72,7 +72,4 @@ public class VisionTextResultProcessor implements
         return false;
     }
 
-    public interface TextRecognitionListener {
-        public void onText(String text);
-    }
 }

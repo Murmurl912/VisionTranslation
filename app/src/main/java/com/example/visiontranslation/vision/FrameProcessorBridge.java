@@ -6,6 +6,7 @@ import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.renderscript.Type;
+import android.util.Log;
 import android.util.SizeF;
 
 import androidx.annotation.NonNull;
@@ -82,7 +83,7 @@ public abstract class FrameProcessorBridge<T> implements FrameProcessor {
 
             processor.onFrame(adapt(bitmap, frame.getRotation()));
         } catch (Exception e) {
-
+            Log.d("Process Error", "Exception", e);
         } finally {
             isProcessing = false;
         }

@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.ui.MainActivity;
 import com.example.visiontranslation.vision.VisionResultProcessor;
+import com.example.visiontranslation.vision.text.VisionFirebaseTextProcessor;
 import com.example.visiontranslation.vision.text.VisionTextProcessor;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.controls.Flash;
@@ -60,9 +61,15 @@ public class CameraFragment extends Fragment
     private VisionTextProcessorBridge textProcessorBridge;
     private VisionTextResultProcessor resultProcessor;
 
+    private VisionFirebaseTextProcessor firebaseTextProcessor;
+    private VisionFirebaseTextProcessorBridge firebaseTextProcessorBridge;
+    private VisionFirebaseTextResultProcessor firebaseTextResultProcessor;
+
     private VisionTextProcessor singleFrameProcessor;
     private VisionResultProcessor singleFrameResultProcessor;
 
+    private VisionFirebasePausedFrameTextResultProcessor visionFirebasePausedFrameTextResultProcessor;
+    private VisionFirebaseTextProcessor visionFirebaseTextProcessor;
 
     public CameraFragment() {
         // Required empty public constructor
@@ -81,7 +88,7 @@ public class CameraFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated() called");
         bindView(view);
-        addFrameProcessor();
+        addFirebaseFrameProcessor();
     }
 
     @Override
@@ -122,10 +129,6 @@ public class CameraFragment extends Fragment
         super.onResume();
         Log.d(TAG, "onResume Called");
         manager.openCamera(true);
-        if(textProcessorBridge != null) {
-            manager.addFrameProcessor(textProcessorBridge);
-        };
-
     }
 
     @Override
@@ -133,9 +136,6 @@ public class CameraFragment extends Fragment
         super.onStop();
         Log.d(TAG,"onStop Called");
         manager.openCamera(false);
-        if(textProcessorBridge != null) {
-            manager.removeFrameProcessor(textProcessorBridge);
-        };
     }
 
     @Override
@@ -201,13 +201,13 @@ public class CameraFragment extends Fragment
 
     @Override
     public void onText(String text) {
-        if(textProcessor.isProcessorEnabled()) {
+        if(firebaseTextProcessor.isProcessorEnabled()) {
             editText.post(()->editText.setText(text));
         }
     }
 
     private void processPausedFrame(Bitmap bitmap) {
-        singleFrameProcessor.onFrame(bitmap);
+        visionFirebaseTextProcessor.onFrame(bitmap);
     }
 
     private void startCamera() {
@@ -273,6 +273,21 @@ public class CameraFragment extends Fragment
         ((PausedFrameVisionTextResultProcessor)singleFrameResultProcessor).setTextSelectionListener(this);
         singleFrameProcessor.setVisionResultProcessor(singleFrameResultProcessor);
         manager.setCameraPausedCallback(this);
+    }
+
+    private void addFirebaseFrameProcessor() {
+        firebaseTextProcessor = new VisionFirebaseTextProcessor();
+        firebaseTextProcessorBridge = new VisionFirebaseTextProcessorBridge(firebaseTextProcessor, new SizeF(cameraView.getWidth(), cameraView.getHeight()));
+        firebaseTextResultProcessor = new VisionFirebaseTextResultProcessor(cameraView, (MainActivity)getActivity());
+        firebaseTextProcessor.setVisionResultProcessor(firebaseTextResultProcessor);
+        firebaseTextResultProcessor.setTextRecognitionListener(this);
+
+        visionFirebasePausedFrameTextResultProcessor = new VisionFirebasePausedFrameTextResultProcessor(waterMark);
+        visionFirebaseTextProcessor = new VisionFirebaseTextProcessor();
+        visionFirebasePausedFrameTextResultProcessor.setTextSelectionListener(this);
+        visionFirebaseTextProcessor.setVisionResultProcessor(visionFirebasePausedFrameTextResultProcessor);
+        manager.setCameraPausedCallback(this);
+        manager.addFrameProcessor(firebaseTextProcessorBridge);
     }
 
     private void speak(String value) {

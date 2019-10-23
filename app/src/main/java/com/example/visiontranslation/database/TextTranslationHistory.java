@@ -169,7 +169,7 @@ public class TextTranslationHistory {
         char[] chars = input.toCharArray();
         for(char c : chars) {
             if(c == '\'') {
-                output.append('\\').append(c);
+                output.append("'").append(c);
             } else {
                 output.append(c);
             }

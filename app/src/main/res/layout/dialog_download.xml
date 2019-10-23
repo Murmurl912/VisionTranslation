@@ -8,7 +8,6 @@
         android:textColor="@color/black"
         android:id="@+id/dialog_message"
         android:textStyle="bold"
-        android:textSize="20sp"
         android:text="Need To Download Translation Model To Perform Translation."
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

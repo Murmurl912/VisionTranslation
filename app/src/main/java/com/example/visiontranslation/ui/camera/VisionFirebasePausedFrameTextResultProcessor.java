@@ -3,38 +3,38 @@ package com.example.visiontranslation.ui.camera;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.Size;
-import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.example.visiontranslation.overlay.ElementDrawable;
+import com.example.visiontranslation.overlay.FirebaseElementDrawable;
+import com.example.visiontranslation.overlay.FirebaseLineDrawable;
 import com.example.visiontranslation.overlay.GraphicsOverlay;
 import com.example.visiontranslation.vision.VisionResultProcessor;
-import com.google.android.gms.vision.text.Element;
-import com.google.android.gms.vision.text.Line;
-import com.google.android.gms.vision.text.Text;
-import com.google.android.gms.vision.text.TextBlock;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PausedFrameVisionTextResultProcessor implements
-        VisionResultProcessor<SparseArray<TextBlock>>, View.OnTouchListener{
+public class VisionFirebasePausedFrameTextResultProcessor
+        implements VisionResultProcessor<Task<FirebaseVisionText>>, View.OnTouchListener {
 
     private GraphicsOverlay overlay;
     private List<Drawable> drawables;
     private View view;
     private PointF pointF = new PointF(-1, -1);
-    private List<ElementDrawable> selected;
+    private List<FirebaseElementDrawable> selected;
 
     private final Object lock = new Object();
     private TextSelectionListener listener;
     private String separator = " ";
-    private List<ElementDrawable> localSelection;
+    private boolean isSelecting = false;
+    private List<FirebaseElementDrawable> localSelection;
 
-    public PausedFrameVisionTextResultProcessor(View view) {
+    public VisionFirebasePausedFrameTextResultProcessor(View view) {
         overlay = new GraphicsOverlay(view);
         drawables = new ArrayList<>();
         this.view = view;
@@ -75,7 +75,7 @@ public class PausedFrameVisionTextResultProcessor implements
     private void testSelected(PointF pointF) {
         synchronized (lock) {
             for(Drawable drawable : drawables) {
-                ElementDrawable elementDrawable = (ElementDrawable)drawable;
+                FirebaseElementDrawable elementDrawable = (FirebaseElementDrawable)drawable;
                 if(elementDrawable.contain(pointF)
                         && !localSelection.contains(elementDrawable)) {
                     localSelection.add(elementDrawable);
@@ -89,7 +89,7 @@ public class PausedFrameVisionTextResultProcessor implements
     private void mergeSelection() {
         synchronized (lock) {
             for(int i = 0; i < selected.size(); i++) {
-                ElementDrawable pre = selected.get(i);
+                FirebaseElementDrawable pre = selected.get(i);
                 if(localSelection.contains(pre)) {
                     localSelection.remove(pre);
                     pre.setSelected(false);
@@ -107,7 +107,7 @@ public class PausedFrameVisionTextResultProcessor implements
     private String getSelection() {
         synchronized (lock) {
             StringBuilder builder = new StringBuilder();
-            for(ElementDrawable drawable : selected) {
+            for(FirebaseElementDrawable drawable : selected) {
                 builder.append(drawable.getValue()).append(separator);
             }
             return builder.toString();
@@ -116,7 +116,7 @@ public class PausedFrameVisionTextResultProcessor implements
 
     public void clearSelection() {
         synchronized (lock) {
-            for(ElementDrawable drawable : selected) {
+            for(FirebaseElementDrawable drawable : selected) {
                 drawable.setSelected(false);
             }
             selected.clear();
@@ -125,21 +125,51 @@ public class PausedFrameVisionTextResultProcessor implements
         }
     }
 
+    public void setTextSelectionListener(@NonNull TextSelectionListener textSelectionListener) {
+        this.listener = textSelectionListener;
+    }
+
     @Override
-    public void onResult(@NonNull SparseArray<TextBlock> result, @NonNull Size frameSize) {
+    public void onResult(@NonNull Task<FirebaseVisionText> task, @NonNull Size frameSize) {
+
+
+        task.addOnCompleteListener(new OnCompleteListener<FirebaseVisionText>() {
+            @Override
+            public void onComplete(@NonNull Task<FirebaseVisionText> task) {
+                overlay.remove(drawables);
+                drawables.clear();
+
+                if(task.isSuccessful()) {
+                    process(task, frameSize);
+                }
+            }
+        });
+
+    }
+
+    private void process(Task<FirebaseVisionText> task, Size frameSize) {
+        if(!task.isSuccessful()) {
+            return;
+        }
+        FirebaseVisionText firebaseVisionText = task.getResult();
+        if(firebaseVisionText == null) {
+            return;
+        }
+
         PointF ratio = new PointF(
                 (float)view.getWidth() / frameSize.getWidth(),
                 (float)view.getHeight() / frameSize.getHeight()
         );
         overlay.remove(drawables);
         drawables.clear();
-        for(int i = 0; i < result.size(); i++) {
-            TextBlock block = result.get(i);
-            for(Text textLine : block.getComponents()) {
-                Line line = (Line)textLine;
-                for(Text textElement : line.getComponents()) {
-                    Element element = (Element)textElement;
-                    Drawable drawable = new ElementDrawable(element, ratio);
+
+        List<FirebaseVisionText.TextBlock> blocks = firebaseVisionText.getTextBlocks();
+        for(FirebaseVisionText.TextBlock block : blocks) {
+            List<FirebaseVisionText.Line> lines = block.getLines();
+            for(FirebaseVisionText.Line line : lines) {
+                List<FirebaseVisionText.Element> elements = line.getElements();
+                for(FirebaseVisionText.Element element : elements) {
+                    FirebaseElementDrawable drawable = new FirebaseElementDrawable(element, ratio);
                     drawables.add(drawable);
                 }
             }
@@ -149,10 +179,4 @@ public class PausedFrameVisionTextResultProcessor implements
             listener.onSelectionChanged("");
         }
     }
-
-    public void setTextSelectionListener(@NonNull TextSelectionListener textSelectionListener) {
-        this.listener = textSelectionListener;
-    }
-
 }
-

@@ -131,14 +131,14 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
         });
     }
 
-    public void add(TextTranslationHistory.TranslationHistory history) {
+    public synchronized void add(TextTranslationHistory.TranslationHistory history) {
         histories.add((TextTranslationHistory.TranslationHistory)history.clone());
         activity.runOnUiThread(()->{
             notifyItemInserted(histories.size() - 1);
         });
     }
 
-    public void add(int index, TextTranslationHistory.TranslationHistory history) {
+    public synchronized void add(int index, TextTranslationHistory.TranslationHistory history) {
         histories.add(index, (TextTranslationHistory.TranslationHistory)history.clone());
         activity.runOnUiThread(()->{
             notifyItemInserted(index);
@@ -157,7 +157,7 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
         }
     }
 
-    public void update(int index, TextTranslationHistory.TranslationHistory history) {
+    public synchronized void update(int index, TextTranslationHistory.TranslationHistory history) {
         if(histories.contains(history)) {
             int i = histories.indexOf(history);
             histories.remove(history);
@@ -168,7 +168,7 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
         });
     }
 
-    public int find(TextTranslationHistory.TranslationHistory history) {
+    public synchronized int find(TextTranslationHistory.TranslationHistory history) {
         if(history == null) {
             return -1;
         }
@@ -236,7 +236,7 @@ public class TextTranslationHistoryAdapter extends RecyclerView.Adapter<TextTran
                 switch (item.getItemId()) {
                     case R.id.pupup_delete: {
                         DatabaseManager.getTextTranslationHistory().remove(h);
-                        remove(position);
+                        remove(find(h));
                     } break;
                 };
                 return true;

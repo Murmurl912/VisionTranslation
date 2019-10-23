@@ -4,23 +4,22 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.util.Size;
-import android.util.SizeF;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.visiontranslation.helper.Helper;
-import com.google.android.gms.vision.text.Element;
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
+import com.google.firebase.ml.vision.text.RecognizedLanguage;
 
-public class ElementDrawable extends Drawable {
-    private Element element;
+import java.util.List;
+
+public class FirebaseElementDrawable extends Drawable {
+    private FirebaseVisionText.Element element;
     private Paint paint;
     private int color;
     private boolean isSelected;
@@ -28,7 +27,7 @@ public class ElementDrawable extends Drawable {
     private PointF[] pointFS;
     private boolean isInitialize = false;
 
-    public ElementDrawable(@NonNull Element element, PointF ratio) {
+    public FirebaseElementDrawable(@NonNull FirebaseVisionText.Element element, PointF ratio) {
         this.element = element;
         this.ratio = ratio;
         this.paint = new Paint();
@@ -51,7 +50,7 @@ public class ElementDrawable extends Drawable {
         };
         isInitialize = true;
     }
-    
+
     public boolean contain(PointF point) {
         return Helper.isPolygonContainsPoint(pointFS, point);
     }
@@ -66,11 +65,11 @@ public class ElementDrawable extends Drawable {
     }
 
     public String getValue() {
-        return element.getValue();
+        return element.getText();
     }
 
-    public String getLanguage() {
-        return element.getLanguage();
+    public List<RecognizedLanguage> getLanguage() {
+        return element.getRecognizedLanguages();
     }
 
     public boolean isSelected() {
@@ -84,7 +83,7 @@ public class ElementDrawable extends Drawable {
     public PointF getRatio() {
         return ratio;
     }
-    
+
     @Override
     public void draw(@NonNull Canvas canvas) {
         initialize();

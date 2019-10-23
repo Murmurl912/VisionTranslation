@@ -17,7 +17,6 @@ public class VisionTextProcessor extends VisionFrameProcessor<SparseArray<TextBl
     private TextRecognizer recognizer;
 
     public VisionTextProcessor(@NonNull Context context) {
-        super(context);
         recognizer = new TextRecognizer.Builder(
                 VisionTranslationApplication.getVisionTranslationApplication().getApplicationContext()
         ).build();

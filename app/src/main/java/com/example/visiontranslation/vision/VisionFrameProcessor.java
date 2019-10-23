@@ -19,9 +19,8 @@ public abstract class VisionFrameProcessor<T> {
     private boolean enableProcessor = true;
     private Bitmap bitmap;
     private final Object lock = new Object();
-    private Context context;
-    public VisionFrameProcessor(@NonNull Context context) {
-        this.context = context;
+    public VisionFrameProcessor() {
+
     }
 
     public boolean isProcessorEnabled() {
