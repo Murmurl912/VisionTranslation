@@ -40,7 +40,9 @@ import com.iflytek.cloud.SpeechUtility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity
     private List<String> languages;
 
     private Fragment mainNavFragment;
+    private Set<OnLanguageChangeListener> languageChangeListenerSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +111,9 @@ public class MainActivity extends AppCompatActivity
                 SharedPreferences sharedPreferences = getSharedPreferences("Default Language", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt("Default Source", position);
-                editor.apply();            }
+                editor.apply();
+                notifyLanguageChange();
+            }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -123,6 +128,7 @@ public class MainActivity extends AppCompatActivity
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt("Default Target", position);
                 editor.apply();
+                notifyLanguageChange();
             }
 
             @Override
@@ -232,37 +238,33 @@ public class MainActivity extends AppCompatActivity
         return NavHostFragment.findNavController(mainNavFragment).navigateUp();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart() called");
+    private void notifyLanguageChange() {
+        if(languageChangeListenerSet == null) {
+            return;
+        }
+
+        for(OnLanguageChangeListener languageChangeListener : languageChangeListenerSet) {
+            if(languageChangeListener != null) {
+                languageChangeListener.onLanguageChange(getSourceLanguage(), getTargetLanguage());
+            }
+        }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop() called");
-        DatabaseManager.close();
-
+    public void addOnLanguageChangeListener(OnLanguageChangeListener languageChangeListener) {
+        if(languageChangeListenerSet == null) {
+            languageChangeListenerSet = new HashSet<>();
+        }
+        languageChangeListenerSet.add(languageChangeListener);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume() called");
+    public void removeOnLanguageChangeListener(OnLanguageChangeListener languageChangeListener) {
+        if(languageChangeListenerSet != null) {
+            languageChangeListenerSet.add(languageChangeListener);
+        }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy() called");
+    public interface OnLanguageChangeListener {
+        public void onLanguageChange(String source, String target);
     }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause() called");
-    }
-
 }
 

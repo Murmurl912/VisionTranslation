@@ -1,6 +1,7 @@
 package com.example.visiontranslation.ui.camera;
 
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.util.Size;
 import android.view.View;
 
@@ -18,50 +19,54 @@ import com.google.protobuf.Internal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VisionFirebaseTextResultProcessor implements VisionResultProcessor<Task<FirebaseVisionText>> {
+public class VisionFirebaseTextResultProcessor
+        implements VisionResultProcessor<Task<FirebaseVisionText>>, MainActivity.OnLanguageChangeListener {
 
     private GraphicsOverlay overlay;
     private List<Drawable> drawables;
     private MainActivity activity;
     private TextRecognitionListener listener;
+    private final Object lock = new Object();
 
     public VisionFirebaseTextResultProcessor(View view, MainActivity activity) {
         drawables = new ArrayList<>();
         overlay = new GraphicsOverlay(view);
         this.activity = activity;
+        activity.addOnLanguageChangeListener(this);
     }
 
+    @Override
+    public void onLanguageChange(String source, String target) {
+
+    }
 
     @Override
     public void onResult(@NonNull Task<FirebaseVisionText> task, @NonNull Size frameSize) {
-
-        try {
-            synchronized (task) {
-                Thread thread = Thread.currentThread();
-                Thread.currentThread().wait();
+        synchronized (lock) {
+            try {
                 task.addOnCompleteListener(new OnCompleteListener<FirebaseVisionText>() {
                     @Override
                     public void onComplete(@NonNull Task<FirebaseVisionText> task) {
-                        overlay.remove(drawables);
-                        drawables.clear();
+                        synchronized (lock) {
+                            overlay.remove(drawables);
+                            drawables.clear();
 
-                        if(task.isSuccessful()) {
-                            process(task, frameSize);
+                            if(task.isSuccessful()) {
+                                process(task, frameSize);
+                            }
+                            lock.notifyAll();
                         }
-                        thread.notify();
                     }
                 });
+                lock.wait();
+            } catch (InterruptedException e) {
+
             }
-
-        } catch (InterruptedException e) {
-
         }
 
     }
 
     private void process(Task<FirebaseVisionText> task, Size frameSize) {
-        overlay.remove(drawables);
-        drawables.clear();
         StringBuilder builder = new StringBuilder();
         if(!task.isSuccessful()) {
             return;

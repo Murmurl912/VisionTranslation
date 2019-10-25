@@ -360,6 +360,7 @@ public class TextFragment extends Fragment {
 
             cancel.post(()->{
                 cancel.setEnabled(false);
+                cancel.setVisibility(View.INVISIBLE);
             });
 
             message.post(()->{
@@ -383,7 +384,7 @@ public class TextFragment extends Fragment {
                                 progressBar.setVisibility(View.INVISIBLE);
                             });
                             message.post(()->{
-                                message.setText("Download Success!");
+                                message.setText("Download Complete!");
                             });
                             ok.post(()->{
                                 ok.setTag("After");

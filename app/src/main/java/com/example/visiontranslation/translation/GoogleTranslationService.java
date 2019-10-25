@@ -2,6 +2,8 @@ package com.example.visiontranslation.translation;
 
 import androidx.annotation.NonNull;
 
+import com.example.visiontranslation.database.DatabaseManager;
+import com.example.visiontranslation.database.TranslationCache;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -150,38 +152,50 @@ public class GoogleTranslationService {
                         @NonNull String to,
                         @NonNull String value,
                         @NonNull TranslationCallback callback) {
-        int s = getCode(from);
-        int t = getCode(to);
-        getTranslator(s, t, new TranslatorInitializeListener() {
-            @Override
-            public void onSuccess(@NonNull FirebaseTranslator translator) {
-                translator.translate(value)
-                        .addOnCompleteListener(new OnCompleteListener<String>() {
-                            @Override
-                            public void onComplete(@NonNull Task<String> task) {
-                                if(task.isSuccessful()) {
-                                    String result = task.getResult();
-                                    if(result != null) {
-                                        callback.onTranslationSuccess(from, to, value, task.getResult());
-                                        return;
-                                    }
-                                }
-                                callback.onTranslationFailure(from, to, value, task.getException());
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                callback.onTranslationFailure(from, to, value, e);
-                            }
-                        });
-            }
 
-            @Override
-            public void onRequestModel(FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target) {
-                callback.onRequireDownloadModel(from, to, value, source, target);
-            }
-        });
+        TranslationCache cache = DatabaseManager.getTranslationCache();
+        TranslationCache.Entry entry = cache.find(from, to, value);
+        if(entry == null) {
+            int s = getCode(from);
+            int t = getCode(to);
+            getTranslator(s, t, new TranslatorInitializeListener() {
+                @Override
+                public void onSuccess(@NonNull FirebaseTranslator translator) {
+                    translator.translate(value)
+                            .addOnCompleteListener(new OnCompleteListener<String>() {
+                                @Override
+                                public void onComplete(@NonNull Task<String> task) {
+                                    if(task.isSuccessful()) {
+                                        String result = task.getResult();
+                                        if(result != null) {
+                                            callback.onTranslationSuccess(from, to, value, task.getResult());
+                                            cache.put(from, to, value, task.getResult());
+                                            return;
+                                        }
+                                    }
+                                    callback.onTranslationFailure(from, to, value, task.getException());
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    callback.onTranslationFailure(from, to, value, e);
+                                }
+                            });
+                }
+
+                @Override
+                public void onRequestModel(FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target) {
+                    callback.onRequireDownloadModel(from, to, value, source, target);
+                }
+            });
+        } else {
+            callback.onTranslationSuccess(entry.getFrom(), entry.getTo(), entry.getQuery(), entry.getResult());
+        }
+    }
+
+    private static void translate() {
+
     }
 
     public interface TranslationCallback {

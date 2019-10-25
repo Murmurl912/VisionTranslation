@@ -17,28 +17,26 @@ import androidx.annotation.Nullable;
 import com.example.visiontranslation.VisionTranslationApplication;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
+import com.example.visiontranslation.translation.GoogleTranslationService;
 import com.google.android.gms.vision.text.Line;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateRemoteModel;
 
 public class LineDrawable extends Drawable {
 
     private Paint paint;
     private Line line;
     private Size frameSize;
-    private Rect lineBox;
     private String value;
-    private String language;
     private Point[] points;
     private float fontSize;
     private String translated;
     private float textHeight;
 
-    public LineDrawable(@NonNull Line line, @NonNull Size frameSize, String targetLanguage) {
+    public LineDrawable(@NonNull Line line, @NonNull Size frameSize, String source, String target) {
         this.line = line;
         this.frameSize = frameSize;
-        this.lineBox = line.getBoundingBox();
         this.paint = new Paint();
         this.value = line.getValue();
-        this.language = line.getLanguage();
         this.points = line.getCornerPoints();
         fontSize = -1;
         paint.setColor(Color.BLACK);
@@ -46,6 +44,28 @@ public class LineDrawable extends Drawable {
         textHeight = 0;
 
         translated = "";
+        translate(line.getValue(), source, target);
+    }
+
+    private void translate(String text, String source, String target) {
+        GoogleTranslationService.request(source, target, text, new GoogleTranslationService.TranslationCallback() {
+            @Override
+            public void onTranslationSuccess(String from, String to, String value, String result) {
+                if(translated != null) {
+                    translated = result;
+                }
+            }
+
+            @Override
+            public void onTranslationFailure(String from, String to, String value, Exception e) {
+
+            }
+
+            @Override
+            public void onRequireDownloadModel(String from, String to, String value, FirebaseTranslateRemoteModel source, FirebaseTranslateRemoteModel target) {
+
+            }
+        });
     }
 
     @Override

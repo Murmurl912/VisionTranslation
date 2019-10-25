@@ -88,7 +88,7 @@ public class CameraFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated() called");
         bindView(view);
-        addFirebaseFrameProcessor();
+        addFrameProcessor();
     }
 
     @Override
@@ -201,13 +201,13 @@ public class CameraFragment extends Fragment
 
     @Override
     public void onText(String text) {
-        if(firebaseTextProcessor.isProcessorEnabled()) {
+        if(textProcessor.isProcessorEnabled()) {
             editText.post(()->editText.setText(text));
         }
     }
 
     private void processPausedFrame(Bitmap bitmap) {
-        visionFirebaseTextProcessor.onFrame(bitmap);
+        singleFrameProcessor.onFrame(bitmap);
     }
 
     private void startCamera() {
