@@ -31,7 +31,7 @@
 
         <activity android:name=".ui.SettingActivity"></activity>
         <activity android:name=".ui.StarActivity" />
-        <activity android:name=".ui.OfflineTranslationActivity" />
+        <activity android:name=".ui.offline.OfflineTranslationActivity" />
         <activity
             android:name=".ui.MainActivity"
             android:screenOrientation="portrait">

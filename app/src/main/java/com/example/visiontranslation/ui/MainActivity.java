@@ -6,12 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,20 +15,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.example.visiontranslation.R;
-import com.example.visiontranslation.animation.FloatingActionButtonAnimation;
-import com.example.visiontranslation.database.DatabaseManager;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
-import com.example.visiontranslation.ui.camera.CameraFragment;
-import com.example.visiontranslation.ui.text.TextFragment;
-import com.example.visiontranslation.ui.voice.VoiceFragment;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.visiontranslation.ui.offline.OfflineTranslationActivity;
 import com.google.android.material.navigation.NavigationView;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
@@ -192,6 +181,12 @@ public class MainActivity extends AppCompatActivity
             } break;
 
             case R.id.main_menu_fav: {
+                mainDrawerLayout.closeDrawer(GravityCompat.START);
+                Intent intent = new Intent(this, StarActivity.class);
+                startActivity(intent);
+            } break;
+
+            case R.id.main_menu_offline: {
                 mainDrawerLayout.closeDrawer(GravityCompat.START);
                 Intent intent = new Intent(this, OfflineTranslationActivity.class);
                 startActivity(intent);

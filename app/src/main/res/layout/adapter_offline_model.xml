@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="22dp"
+    style="?attr/buttonBarStyle">
+    <TextView
+        android:textSize="20sp"
+        android:gravity="center|start"
+        android:textColor="@color/black"
+        android:id="@+id/adapter_offline_model_name"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+    <TextView
+        android:textSize="20sp"
+        android:gravity="center|start"
+        android:textColor="@color/black"
+        android:id="@+id/adapter_offline_message"
+        android:paddingLeft="22dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+    <ProgressBar
+        android:padding="5dp"
+        android:layout_gravity="center"
+        android:id="@+id/adapter_offline_progress"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+    <ImageButton
+        android:id="@+id/adapter_offline_download"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_download_dark"
+        style="?buttonBarButtonStyle"/>
+</LinearLayout>

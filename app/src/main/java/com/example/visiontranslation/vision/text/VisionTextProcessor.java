@@ -31,7 +31,6 @@ public class VisionTextProcessor extends VisionFrameProcessor<SparseArray<TextBl
     @Override
     public SparseArray<TextBlock> onProcess(@NonNull Bitmap bitmap) {
         Frame frame = new Frame.Builder().setBitmap(bitmap).setRotation(0).build();
-        Bitmap bitmap1 = frame.getBitmap();
         return recognizer.detect(frame);
     }
 }

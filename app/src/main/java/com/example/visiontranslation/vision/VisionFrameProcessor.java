@@ -38,6 +38,9 @@ public abstract class VisionFrameProcessor<T> {
         }
 
         synchronized (lock) {
+            if(bitmap != null && !bitmap.isRecycled()) {
+                bitmap.recycle();
+            }
             bitmap = frame;
             if(visionResultProcessor != null) {
                 visionResultProcessor.onResult(

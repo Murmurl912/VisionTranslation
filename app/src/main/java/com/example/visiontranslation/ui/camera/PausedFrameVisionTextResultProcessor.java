@@ -107,8 +107,12 @@ public class PausedFrameVisionTextResultProcessor implements
     private String getSelection() {
         synchronized (lock) {
             StringBuilder builder = new StringBuilder();
-            for(ElementDrawable drawable : selected) {
-                builder.append(drawable.getValue()).append(separator);
+            for(Drawable drawable : drawables) {
+                ElementDrawable elementDrawable = (ElementDrawable)drawable;
+                if(elementDrawable.isSelected()) {
+                    builder.append(elementDrawable.getValue()).append(separator);
+
+                }
             }
             return builder.toString();
         }

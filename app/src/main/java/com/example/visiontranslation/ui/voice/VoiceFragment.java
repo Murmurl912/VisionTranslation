@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -34,7 +35,9 @@ import com.iflytek.cloud.SpeechUtility;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import static androidx.camera.core.CameraX.getContext;
 import static com.example.visiontranslation.translation.BaiduTranslationService.STATUS_OK;
 
 /**
@@ -173,7 +176,10 @@ public class VoiceFragment extends Fragment {
                 if (b) {
                     result = parseVoice(recognizerResult.getResultString());
                     if (!"".equals(result)) {
-                        BaiduTranslationService.getBaiduTranslationService().request("zh", "en", result, new BaiduTranslationService.Response() {
+                        BaiduTranslationService.getBaiduTranslationService().request("zh",
+                                BaiduTranslationService.getCode(((MainActivity) getActivity()).getTargetLanguage()),
+                                result,
+                                new BaiduTranslationService.Response() {
                             @Override
                             public void response(String s, int status) {
                                 if(status == STATUS_OK) {
@@ -184,7 +190,7 @@ public class VoiceFragment extends Fragment {
                                 }
 
                                 getActivity().runOnUiThread(()->{
-                                    Msg msg = new Msg(result, Msg.TYPE_SENT);
+                                    Msg msg = new Msg(result, Msg.TYPE_SENT, ((MainActivity)getActivity()).getTargetLanguage(), s);
                                     msgList.add(msg);
                                     adapter.notifyItemInserted(msgList.size() - 1); // 当有新消息时，刷新RecyclerView中的显示
                                     msgRecyclerView.scrollToPosition(msgList.size() - 1); // 将RecyclerView定位到最后一行
@@ -255,7 +261,10 @@ public class VoiceFragment extends Fragment {
                 if (b) {
                     result = parseVoice(recognizerResult.getResultString());
                     if (!"".equals(result)) {
-                        BaiduTranslationService.getBaiduTranslationService().request("en", "zh", result, new BaiduTranslationService.Response() {
+                        BaiduTranslationService.getBaiduTranslationService().request("en",
+                                BaiduTranslationService.getCode(((MainActivity) getActivity()).getTargetLanguage()),
+                                result,
+                                new BaiduTranslationService.Response() {
                             @Override
                             public void response(String s, int status) {
                                 if(status == STATUS_OK) {
@@ -265,7 +274,7 @@ public class VoiceFragment extends Fragment {
                                 }
 
                                 getActivity().runOnUiThread(()->{
-                                    Msg msg = new Msg(result, Msg.TYPE_RECEIVED);
+                                    Msg msg = new Msg(result, Msg.TYPE_RECEIVED, ((MainActivity)getActivity()).getTargetLanguage(), s);
                                     msgList.add(msg);
                                     adapter.notifyItemInserted(msgList.size() - 1); // 当有新消息时，刷新RecyclerView中的显示
                                     msgRecyclerView.scrollToPosition(msgList.size() - 1); // 将RecyclerView定位到最后一行
@@ -290,7 +299,6 @@ public class VoiceFragment extends Fragment {
 
     }
 
-
     //解析语音json
     public String parseVoice(String resultString) {
         Gson gson = new Gson();
@@ -314,6 +322,52 @@ public class VoiceFragment extends Fragment {
 
         public class CWBean {
             public String w;
+        }
+    }
+
+    private boolean isTTSReady = false;
+    private TextToSpeech tts;
+
+    private void speak(@NonNull String text, Locale locale) {
+
+        if(tts == null) {
+            tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+                @Override
+                public synchronized void onInit(int status) {
+                    if(status == TextToSpeech.SUCCESS) {
+                        isTTSReady = true;
+                        tts.setLanguage(locale);
+                        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                        Toast.makeText(getContext(), "Speaking", Toast.LENGTH_SHORT).show();
+                    } else {
+                        isTTSReady = false;
+                        Toast.makeText(getContext(), "Text To Speech Failed to Initialize", Toast.LENGTH_SHORT).show();
+                        tts = null;
+                    }
+                }
+            });
+        } else {
+            if(isTTSReady) {
+                tts.setLanguage(locale);
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                Toast.makeText(getContext(), "Speaking", Toast.LENGTH_SHORT).show();
+            } else {
+                tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+                    @Override
+                    public synchronized void onInit(int status) {
+                        if(status == TextToSpeech.SUCCESS) {
+                            isTTSReady = true;
+                            tts.setLanguage(locale);
+                            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                            Toast.makeText(getContext(), "Speaking", Toast.LENGTH_SHORT).show();
+                        } else {
+                            isTTSReady = false;
+                            Toast.makeText(getContext(), "Text To Speech Failed to Initialize", Toast.LENGTH_SHORT).show();
+                            tts = null;
+                        }
+                    }
+                });
+            }
         }
     }
 

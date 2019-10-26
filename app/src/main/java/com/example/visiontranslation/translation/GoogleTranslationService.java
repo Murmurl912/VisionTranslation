@@ -18,6 +18,7 @@ import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOption
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 //ToDo: Add model manager
 //ToDo: Add dialog to show download info
@@ -194,9 +195,17 @@ public class GoogleTranslationService {
         }
     }
 
-    private static void translate() {
 
+    public static Task<Set<FirebaseTranslateRemoteModel>> getDownloadedModels() {
+        FirebaseModelManager modelManager = FirebaseModelManager.getInstance();
+        return modelManager.getDownloadedModels(FirebaseTranslateRemoteModel.class);
     }
+
+    public static Task<Boolean> isModelDownload(int code) {
+        FirebaseModelManager modelManager = FirebaseModelManager.getInstance();
+        return modelManager.isModelDownloaded(new FirebaseTranslateRemoteModel.Builder(code).build());
+    }
+
 
     public interface TranslationCallback {
 

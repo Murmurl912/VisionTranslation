@@ -12,6 +12,9 @@
         android:checkable="true"
         android:checked="false"
         android:title="Star"/>
+    <item android:id="@+id/main_menu_offline"
+        android:icon="@drawable/ic_offline_dark"
+        android:title="Offline"/>
     <item android:id="@+id/main_menu_setting"
         android:icon="@drawable/ic_setting_dark"
         android:title="Setting"/>

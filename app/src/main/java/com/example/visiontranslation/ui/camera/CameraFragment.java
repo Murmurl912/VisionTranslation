@@ -61,15 +61,8 @@ public class CameraFragment extends Fragment
     private VisionTextProcessorBridge textProcessorBridge;
     private VisionTextResultProcessor resultProcessor;
 
-    private VisionFirebaseTextProcessor firebaseTextProcessor;
-    private VisionFirebaseTextProcessorBridge firebaseTextProcessorBridge;
-    private VisionFirebaseTextResultProcessor firebaseTextResultProcessor;
-
     private VisionTextProcessor singleFrameProcessor;
     private VisionResultProcessor singleFrameResultProcessor;
-
-    private VisionFirebasePausedFrameTextResultProcessor visionFirebasePausedFrameTextResultProcessor;
-    private VisionFirebaseTextProcessor visionFirebaseTextProcessor;
 
     public CameraFragment() {
         // Required empty public constructor
@@ -273,21 +266,6 @@ public class CameraFragment extends Fragment
         ((PausedFrameVisionTextResultProcessor)singleFrameResultProcessor).setTextSelectionListener(this);
         singleFrameProcessor.setVisionResultProcessor(singleFrameResultProcessor);
         manager.setCameraPausedCallback(this);
-    }
-
-    private void addFirebaseFrameProcessor() {
-        firebaseTextProcessor = new VisionFirebaseTextProcessor();
-        firebaseTextProcessorBridge = new VisionFirebaseTextProcessorBridge(firebaseTextProcessor, new SizeF(cameraView.getWidth(), cameraView.getHeight()));
-        firebaseTextResultProcessor = new VisionFirebaseTextResultProcessor(cameraView, (MainActivity)getActivity());
-        firebaseTextProcessor.setVisionResultProcessor(firebaseTextResultProcessor);
-        firebaseTextResultProcessor.setTextRecognitionListener(this);
-
-        visionFirebasePausedFrameTextResultProcessor = new VisionFirebasePausedFrameTextResultProcessor(waterMark);
-        visionFirebaseTextProcessor = new VisionFirebaseTextProcessor();
-        visionFirebasePausedFrameTextResultProcessor.setTextSelectionListener(this);
-        visionFirebaseTextProcessor.setVisionResultProcessor(visionFirebasePausedFrameTextResultProcessor);
-        manager.setCameraPausedCallback(this);
-        manager.addFrameProcessor(firebaseTextProcessorBridge);
     }
 
     private void speak(String value) {

@@ -6,6 +6,7 @@
     android:padding="10dp" >
 
     <LinearLayout
+        android:orientation="horizontal"
         android:id="@+id/left_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,16 +15,31 @@
 
         <TextView
             android:id="@+id/left_msg"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:textColor="#fff"
             android:textSize="20sp"/>
+
+        <ImageButton
+            android:padding="0dp"
+            android:layout_gravity="end|bottom"
+            android:id="@+id/voice_left_button"
+            android:background="#00000000"
+            android:contentDescription="Speak Content"
+            android:src="@drawable/ic_speak_dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center|start"
+            />
+
 
     </LinearLayout>
 
     <LinearLayout
+        android:orientation="horizontal"
         android:id="@+id/right_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -32,11 +48,24 @@
 
         <TextView
             android:id="@+id/right_msg"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:textSize="20sp"/>
+
+        <ImageButton
+            android:padding="0dp"
+            android:layout_gravity="end|bottom"
+            android:id="@+id/voice_right_button"
+            android:background="#00000000"
+            android:contentDescription="Speak Content"
+            android:src="@drawable/ic_speak_dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center|start"
+            />
 
     </LinearLayout>
 
