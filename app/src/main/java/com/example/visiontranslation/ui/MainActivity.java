@@ -23,6 +23,7 @@ import com.example.visiontranslation.R;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
 import com.example.visiontranslation.ui.offline.OfflineTranslationActivity;
+import com.example.visiontranslation.ui.star.StarActivity;
 import com.google.android.material.navigation.NavigationView;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;

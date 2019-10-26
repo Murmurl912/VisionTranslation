@@ -1,4 +1,4 @@
-package com.example.visiontranslation.ui;
+package com.example.visiontranslation.ui.star;
 
 import androidx.appcompat.app.AppCompatActivity;
 
