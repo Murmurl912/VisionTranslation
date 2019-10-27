@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/main_appbar_layout"
+            android:id="@+id/offline_appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
@@ -19,7 +19,7 @@
                 android:id="@+id/offline_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:title="Offline Translation"/>
+                app:title="Offline"/>
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.recyclerview.widget.RecyclerView

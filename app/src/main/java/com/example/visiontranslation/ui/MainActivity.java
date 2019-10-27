@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -22,7 +24,9 @@ import android.widget.Spinner;
 import com.example.visiontranslation.R;
 import com.example.visiontranslation.helper.Helper;
 import com.example.visiontranslation.translation.BaiduTranslationService;
+import com.example.visiontranslation.ui.about.AboutDialog;
 import com.example.visiontranslation.ui.offline.OfflineTranslationActivity;
+import com.example.visiontranslation.ui.setting.SettingActivity;
 import com.example.visiontranslation.ui.star.StarActivity;
 import com.google.android.material.navigation.NavigationView;
 import com.iflytek.cloud.SpeechConstant;
@@ -169,9 +173,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void aboutDialog() {
-
-    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -200,7 +201,7 @@ public class MainActivity extends AppCompatActivity
 
             case R.id.main_menu_about: {
                 mainDrawerLayout.closeDrawer(GravityCompat.START);
-
+                about();
             } break;
         }
 
@@ -257,6 +258,16 @@ public class MainActivity extends AppCompatActivity
         if(languageChangeListenerSet != null) {
             languageChangeListenerSet.add(languageChangeListener);
         }
+    }
+
+    public void about() {
+        AboutDialog dialog = new AboutDialog(this);
+        dialog.show();
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.90);
+        lp.width = width;
+        dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
     public interface OnLanguageChangeListener {

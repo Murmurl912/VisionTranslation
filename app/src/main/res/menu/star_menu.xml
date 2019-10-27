@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/star_app_bar_search"
+        android:icon="@drawable/ic_search_dark"
+        android:title="Search"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/star_sort"
+        android:icon="@drawable/ic_sort_dark"
+        android:title="Sort"
+        app:showAsAction="always"/>
+</menu>
