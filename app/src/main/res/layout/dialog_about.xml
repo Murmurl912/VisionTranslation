@@ -273,18 +273,16 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
                 <TextView
                     android:padding="10dp"
                     android:textSize="22sp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Special Thanks"/>
+                    android:text="Licences"/>
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -304,7 +302,7 @@
                     android:textSize="22sp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Licences"/>
+                    android:text="Special Thanks"/>
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="match_parent"
