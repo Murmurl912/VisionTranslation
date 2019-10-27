@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity
         dialog.show();
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         lp.copyFrom(dialog.getWindow().getAttributes());
-        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.95);
+        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.90);
         lp.width = width;
         dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
