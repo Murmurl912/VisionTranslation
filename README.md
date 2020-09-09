@@ -3,9 +3,9 @@
     APP借助Opencv、Firebase ML Kit构建。
 
 国内好像无法现实图片，所有文档都在根目录  
-[演示](演示视频.zip)  
-[PPT]('Vision Translation.pptx')  
-[文档]('Vision Translation翻译软件开发报告.docx')  
+[演示视频](演示视频.zip)  
+[系统设计文档](https://github.com/Murmurl912/VisionTranslation/blob/non-overlay-soultion/Vision%20Translation%E7%BF%BB%E8%AF%91%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E6%8A%A5%E5%91%8A.docx)  
+[演示PPT](https://github.com/Murmurl912/VisionTranslation/blob/non-overlay-soultion/Vision%20Translation.pptx)  
 
 
 ## 文本翻译
