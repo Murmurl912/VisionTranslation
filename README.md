@@ -2,6 +2,12 @@
     安卓视觉翻译APP，是一款视觉翻译软件，旨在将手机相机预览中的文本实时翻译为目标语言。
     APP借助Opencv、Firebase ML Kit构建。
 
+国内好像无法现实图片，所有文档都在根目录
+[演示](演示视频.zip)
+[PPT](Vision Translation.pptx)
+[文档](Vision Translation翻译软件开发报告.docx)
+
+
 ## 文本翻译
       通过输入文本开始翻译。翻译会保存历史记录。顶部可以选择目标语言和源语言。
       
