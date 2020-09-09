@@ -3,8 +3,11 @@
     APP借助Opencv、Firebase ML Kit构建。
 
 ## 文本翻译
-    
+![text](text.jpg)
+
 ## 相机翻译
+![text](camera.jpg)
 
 ## 照片翻译
+![text](photo.jpg)
 
