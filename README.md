@@ -3,9 +3,9 @@
     APP借助Opencv、Firebase ML Kit构建。
 
 国内好像无法现实图片，所有文档都在根目录
-[演示](演示视频.zip)
-[PPT](Vision Translation.pptx)
-[文档](Vision Translation翻译软件开发报告.docx)
+[演示](演示视频.zip)  
+[PPT](Vision Translation.pptx)  
+[文档](Vision Translation翻译软件开发报告.docx)  
 
 
 ## 文本翻译
